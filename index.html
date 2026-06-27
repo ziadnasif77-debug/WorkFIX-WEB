@@ -1,0 +1,3126 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="WorkFix — On-demand home services marketplace">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>WorkFix</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+/* ============================================
+   CSS CUSTOM PROPERTIES
+   ============================================ */
+:root {
+  --c-primary: #2563eb;
+  --c-primary-hover: #1d4ed8;
+  --c-primary-light: #dbeafe;
+  --c-secondary: #7c3aed;
+  --c-success: #16a34a;
+  --c-success-light: #dcfce7;
+  --c-warning: #ea580c;
+  --c-warning-light: #fff7ed;
+  --c-danger: #dc2626;
+  --c-danger-light: #fef2f2;
+  --c-info: #0891b2;
+  --c-info-light: #ecfeff;
+  --c-bg: #f8fafc;
+  --c-surface: #ffffff;
+  --c-surface-hover: #f1f5f9;
+  --c-border: #e2e8f0;
+  --c-text: #0f172a;
+  --c-text-secondary: #64748b;
+  --c-text-muted: #94a3b8;
+  --c-overlay: rgba(0,0,0,0.5);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  --font-xs: 11px;
+  --font-sm: 13px;
+  --font-md: 15px;
+  --font-lg: 18px;
+  --font-xl: 22px;
+  --font-xxl: 28px;
+  --tab-height: 60px;
+  --header-height: 56px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{
+  height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-size:var(--font-md);color:var(--c-text);background:var(--c-bg);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+html[dir="rtl"] body{font-family:'Segoe UI',Tahoma,'Noto Sans Arabic',Arial,sans-serif}
+a{color:var(--c-primary);text-decoration:none}
+input,textarea,select,button{font:inherit;color:inherit;border:none;outline:none;background:none}
+img{max-width:100%;display:block}
+ul,ol{list-style:none}
+
+/* ============================================
+   APP SHELL
+   ============================================ */
+#app{height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.screen{
+  display:none;flex-direction:column;height:100%;overflow:hidden;
+  animation:fadeIn .2s ease;
+}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Header */
+.header{
+  height:var(--header-height);padding:0 var(--space-md);
+  display:flex;align-items:center;gap:var(--space-md);
+  background:var(--c-surface);border-bottom:1px solid var(--c-border);
+  flex-shrink:0;padding-top:var(--safe-top);position:relative;z-index:10;
+}
+.header-title{font-size:var(--font-lg);font-weight:700;flex:1}
+.header-back{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-full);cursor:pointer;font-size:20px;
+}
+.header-back:hover{background:var(--c-surface-hover)}
+.header-action{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-full);cursor:pointer;position:relative;
+}
+.header-action:hover{background:var(--c-surface-hover)}
+
+/* Scrollable content */
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.content-padded{padding:var(--space-md)}
+
+/* Bottom tabs */
+.tab-bar{
+  height:var(--tab-height);padding-bottom:var(--safe-bottom);
+  display:flex;background:var(--c-surface);border-top:1px solid var(--c-border);
+  flex-shrink:0;position:relative;z-index:10;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;color:var(--c-text-muted);transition:color .15s;
+  font-size:var(--font-xs);
+}
+.tab-item.active{color:var(--c-primary)}
+.tab-item .tab-icon{font-size:22px;line-height:1}
+.tab-item .tab-label{font-weight:500}
+
+/* ============================================
+   COMPONENTS
+   ============================================ */
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);
+  padding:12px 20px;border-radius:var(--radius-md);font-weight:600;
+  cursor:pointer;transition:all .15s;font-size:var(--font-md);white-space:nowrap;
+}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-hover)}
+.btn-secondary{background:var(--c-surface);color:var(--c-text);border:1px solid var(--c-border)}
+.btn-secondary:hover{background:var(--c-surface-hover)}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-ghost{color:var(--c-primary)}
+.btn-ghost:hover{background:var(--c-primary-light)}
+.btn-full{width:100%}
+.btn:disabled{opacity:.5;pointer-events:none}
+.btn-sm{padding:8px 14px;font-size:var(--font-sm)}
+.btn-lg{padding:14px 24px;font-size:var(--font-lg)}
+
+/* Inputs */
+.input-group{margin-bottom:var(--space-md)}
+.input-label{display:block;font-size:var(--font-sm);font-weight:600;margin-bottom:var(--space-xs);color:var(--c-text-secondary)}
+.input{
+  width:100%;padding:12px 14px;background:var(--c-surface);border:1.5px solid var(--c-border);
+  border-radius:var(--radius-md);font-size:var(--font-md);transition:border-color .15s;
+}
+.input:focus{border-color:var(--c-primary);box-shadow:0 0 0 3px var(--c-primary-light)}
+.input-error{border-color:var(--c-danger)!important}
+.error-text{color:var(--c-danger);font-size:var(--font-xs);margin-top:var(--space-xs)}
+textarea.input{min-height:100px;resize:vertical}
+.input-with-icon{position:relative}
+.input-with-icon .input{padding-inline-start:40px}
+.input-with-icon .input-icon{position:absolute;top:50%;inset-inline-start:12px;transform:translateY(-50%);color:var(--c-text-muted)}
+
+/* Cards */
+.card{
+  background:var(--c-surface);border-radius:var(--radius-lg);
+  border:1px solid var(--c-border);overflow:hidden;
+}
+.card-padded{padding:var(--space-md)}
+.card-hover{cursor:pointer;transition:box-shadow .15s}
+.card-hover:hover{box-shadow:var(--shadow-md)}
+
+/* Badge */
+.badge{
+  display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--radius-full);
+  font-size:var(--font-xs);font-weight:600;white-space:nowrap;
+}
+.badge-primary{background:var(--c-primary-light);color:var(--c-primary)}
+.badge-success{background:var(--c-success-light);color:var(--c-success)}
+.badge-warning{background:var(--c-warning-light);color:var(--c-warning)}
+.badge-danger{background:var(--c-danger-light);color:var(--c-danger)}
+.badge-info{background:var(--c-info-light);color:var(--c-info)}
+.badge-neutral{background:#f1f5f9;color:var(--c-text-secondary)}
+
+/* Avatar */
+.avatar{
+  width:40px;height:40px;border-radius:var(--radius-full);
+  background:var(--c-primary-light);color:var(--c-primary);
+  display:flex;align-items:center;justify-content:center;font-weight:700;
+  font-size:var(--font-md);overflow:hidden;flex-shrink:0;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar-sm{width:32px;height:32px;font-size:var(--font-sm)}
+.avatar-lg{width:56px;height:56px;font-size:var(--font-xl)}
+.avatar-xl{width:80px;height:80px;font-size:var(--font-xxl)}
+
+/* Status dot */
+.status-dot{
+  width:10px;height:10px;border-radius:50%;border:2px solid var(--c-surface);
+  position:absolute;bottom:0;inset-inline-end:0;
+}
+.status-dot.online{background:var(--c-success)}
+.status-dot.offline{background:var(--c-text-muted)}
+
+/* Empty state */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:var(--space-xxl) var(--space-md);text-align:center;
+}
+.empty-state .empty-icon{font-size:48px;margin-bottom:var(--space-md)}
+.empty-state .empty-title{font-size:var(--font-lg);font-weight:600;margin-bottom:var(--space-sm)}
+.empty-state .empty-text{color:var(--c-text-secondary);max-width:280px}
+
+/* Skeleton */
+.skeleton{background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-sm)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-line{height:14px;margin-bottom:8px;border-radius:4px}
+.skeleton-line.w-60{width:60%}
+.skeleton-line.w-80{width:80%}
+.skeleton-line.w-40{width:40%}
+.skeleton-circle{border-radius:50%}
+
+/* Chips / filter tabs */
+.chip-row{display:flex;gap:var(--space-sm);overflow-x:auto;padding:var(--space-sm) var(--space-md);-ms-overflow-style:none;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{
+  padding:8px 16px;border-radius:var(--radius-full);font-size:var(--font-sm);font-weight:600;
+  cursor:pointer;white-space:nowrap;border:1.5px solid var(--c-border);color:var(--c-text-secondary);
+  transition:all .15s;
+}
+.chip.active{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+
+/* Category grid */
+.category-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-md);padding:var(--space-md)}
+.category-card{
+  display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);
+  padding:var(--space-lg) var(--space-md);background:var(--c-surface);
+  border-radius:var(--radius-lg);border:1px solid var(--c-border);cursor:pointer;
+  transition:all .15s;text-align:center;
+}
+.category-card:hover{box-shadow:var(--shadow-md);border-color:var(--c-primary)}
+.category-card .cat-icon{font-size:32px}
+.category-card .cat-name{font-weight:600;font-size:var(--font-sm)}
+
+/* Order card */
+.order-card{
+  padding:var(--space-md);border-bottom:1px solid var(--c-border);
+  cursor:pointer;transition:background .15s;
+}
+.order-card:hover{background:var(--c-surface-hover)}
+.order-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-sm);margin-bottom:var(--space-sm)}
+.order-card-title{font-weight:600;font-size:var(--font-md)}
+.order-card-meta{display:flex;gap:var(--space-md);font-size:var(--font-sm);color:var(--c-text-secondary);flex-wrap:wrap}
+.order-card-price{font-weight:700;color:var(--c-text);font-size:var(--font-md)}
+
+/* Quote card */
+.quote-card{
+  padding:var(--space-md);background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:var(--radius-lg);margin-bottom:var(--space-sm);
+}
+.quote-card-header{display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-sm)}
+.quote-card-price{font-size:var(--font-xl);font-weight:700;color:var(--c-primary)}
+.quote-card-actions{display:flex;gap:var(--space-sm);margin-top:var(--space-md)}
+
+/* Chat */
+.chat-container{display:flex;flex-direction:column;height:100%}
+.chat-messages{flex:1;overflow-y:auto;padding:var(--space-md);display:flex;flex-direction:column;gap:var(--space-sm)}
+.msg-bubble{max-width:75%;padding:10px 14px;border-radius:var(--radius-lg);font-size:var(--font-md);line-height:1.4;word-break:break-word}
+.msg-mine{align-self:flex-end;background:var(--c-primary);color:#fff;border-bottom-right-radius:4px}
+html[dir="rtl"] .msg-mine{border-bottom-right-radius:var(--radius-lg);border-bottom-left-radius:4px}
+.msg-theirs{align-self:flex-start;background:#f1f5f9;color:var(--c-text);border-bottom-left-radius:4px}
+html[dir="rtl"] .msg-theirs{border-bottom-left-radius:var(--radius-lg);border-bottom-right-radius:4px}
+.msg-time{font-size:var(--font-xs);color:var(--c-text-muted);margin-top:2px}
+.msg-system{align-self:center;background:var(--c-info-light);color:var(--c-info);font-size:var(--font-sm);text-align:center;border-radius:var(--radius-full);padding:6px 16px}
+.chat-input-bar{
+  display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);
+  background:var(--c-surface);border-top:1px solid var(--c-border);padding-bottom:calc(var(--space-sm) + var(--safe-bottom));
+}
+.chat-input{
+  flex:1;padding:10px 14px;background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:var(--radius-full);max-height:100px;
+}
+.chat-send{
+  width:40px;height:40px;border-radius:50%;background:var(--c-primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+}
+.chat-send:hover{background:var(--c-primary-hover)}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-md)}
+.stat-card{
+  padding:var(--space-md);background:var(--c-surface);border-radius:var(--radius-lg);
+  border:1px solid var(--c-border);text-align:center;
+}
+.stat-value{font-size:var(--font-xxl);font-weight:700;color:var(--c-primary)}
+.stat-label{font-size:var(--font-sm);color:var(--c-text-secondary);margin-top:var(--space-xs)}
+
+/* Settings row */
+.settings-list{background:var(--c-surface);border-radius:var(--radius-lg);border:1px solid var(--c-border);overflow:hidden}
+.settings-item{
+  display:flex;align-items:center;gap:var(--space-md);padding:14px var(--space-md);
+  cursor:pointer;transition:background .15s;border-bottom:1px solid var(--c-border);
+}
+.settings-item:last-child{border-bottom:none}
+.settings-item:hover{background:var(--c-surface-hover)}
+.settings-item .si-icon{font-size:20px;width:28px;text-align:center}
+.settings-item .si-text{flex:1;font-weight:500}
+.settings-item .si-chevron{color:var(--c-text-muted);font-size:18px}
+
+/* Toggle switch */
+.toggle{
+  width:48px;height:28px;border-radius:14px;background:var(--c-border);
+  position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;
+}
+.toggle.on{background:var(--c-primary)}
+.toggle::after{
+  content:'';position:absolute;top:3px;inset-inline-start:3px;
+  width:22px;height:22px;border-radius:50%;background:#fff;
+  transition:transform .2s;box-shadow:var(--shadow-sm);
+}
+.toggle.on::after{transform:translateX(20px)}
+html[dir="rtl"] .toggle.on::after{transform:translateX(-20px)}
+
+/* Star rating */
+.stars{display:flex;gap:2px}
+.star{font-size:22px;cursor:pointer;color:var(--c-border);transition:color .1s}
+.star.filled{color:#f59e0b}
+
+/* Modal / Bottom sheet */
+.modal-overlay{
+  position:fixed;inset:0;background:var(--c-overlay);z-index:100;
+  display:none;align-items:flex-end;justify-content:center;
+  animation:fadeOverlay .2s ease;
+}
+.modal-overlay.open{display:flex}
+@keyframes fadeOverlay{from{opacity:0}to{opacity:1}}
+.modal-sheet{
+  background:var(--c-surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+  width:100%;max-width:500px;max-height:85vh;overflow-y:auto;
+  padding:var(--space-lg);padding-bottom:calc(var(--space-lg) + var(--safe-bottom));
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+.modal-handle{width:36px;height:4px;background:var(--c-border);border-radius:2px;margin:0 auto var(--space-md)}
+.modal-title{font-size:var(--font-lg);font-weight:700;margin-bottom:var(--space-md)}
+
+/* Map */
+#map-container{width:100%;height:100%;min-height:300px}
+.leaflet-container{width:100%;height:100%;border-radius:0}
+
+/* Spinner */
+.spinner{
+  width:24px;height:24px;border:3px solid var(--c-border);border-top-color:var(--c-primary);
+  border-radius:50%;animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner-center{display:flex;align-items:center;justify-content:center;padding:var(--space-xxl)}
+
+/* Toast */
+.toast{
+  position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%);
+  padding:12px 24px;border-radius:var(--radius-md);color:#fff;font-weight:600;
+  z-index:200;animation:toastIn .3s ease;pointer-events:none;
+  font-size:var(--font-sm);max-width:90%;text-align:center;
+}
+.toast-success{background:var(--c-success)}
+.toast-error{background:var(--c-danger)}
+.toast-info{background:var(--c-info)}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* Search bar */
+.search-bar{
+  display:flex;align-items:center;gap:var(--space-sm);padding:10px 14px;
+  background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--radius-full);
+  margin:var(--space-md);
+}
+.search-bar input{flex:1;background:none;font-size:var(--font-md)}
+.search-bar .search-icon{color:var(--c-text-muted);font-size:18px}
+
+/* Timeline / steps */
+.timeline{display:flex;flex-direction:column;gap:0;padding:var(--space-md)}
+.timeline-step{display:flex;align-items:flex-start;gap:var(--space-md);position:relative;padding-bottom:var(--space-lg)}
+.timeline-step:last-child{padding-bottom:0}
+.timeline-step::before{
+  content:'';position:absolute;inset-inline-start:15px;top:32px;bottom:0;
+  width:2px;background:var(--c-border);
+}
+.timeline-step:last-child::before{display:none}
+.timeline-dot{
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;flex-shrink:0;z-index:1;
+}
+.timeline-dot.done{background:var(--c-success);color:#fff}
+.timeline-dot.current{background:var(--c-primary);color:#fff}
+.timeline-dot.pending{background:var(--c-bg);color:var(--c-text-muted);border:2px solid var(--c-border)}
+.timeline-content{flex:1}
+.timeline-title{font-weight:600;font-size:var(--font-md)}
+.timeline-desc{font-size:var(--font-sm);color:var(--c-text-secondary)}
+
+/* Bar chart */
+.bar-chart{display:flex;align-items:flex-end;gap:var(--space-sm);height:160px;padding:var(--space-md)}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:var(--space-xs)}
+.bar-fill{width:100%;background:var(--c-primary);border-radius:var(--radius-sm) var(--radius-sm) 0 0;min-height:4px;transition:height .3s}
+.bar-label{font-size:var(--font-xs);color:var(--c-text-secondary)}
+
+/* Section header */
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:var(--space-md) var(--space-md) var(--space-sm);
+}
+.section-title{font-size:var(--font-lg);font-weight:700}
+.section-link{font-size:var(--font-sm);color:var(--c-primary);font-weight:600;cursor:pointer}
+
+/* Horizontal scroll list */
+.h-scroll{display:flex;gap:var(--space-md);overflow-x:auto;padding:0 var(--space-md) var(--space-md);-ms-overflow-style:none;scrollbar-width:none}
+.h-scroll::-webkit-scrollbar{display:none}
+.h-scroll-card{min-width:260px;max-width:300px;flex-shrink:0}
+
+/* KYC status banner */
+.kyc-banner{
+  display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);
+  border-radius:var(--radius-lg);margin-bottom:var(--space-md);
+}
+.kyc-banner.not_submitted{background:var(--c-warning-light);color:var(--c-warning)}
+.kyc-banner.pending{background:var(--c-info-light);color:var(--c-info)}
+.kyc-banner.approved{background:var(--c-success-light);color:var(--c-success)}
+.kyc-banner.rejected{background:var(--c-danger-light);color:var(--c-danger)}
+
+/* Responsive */
+@media(min-width:768px){
+  #app{max-width:480px;margin:0 auto;border-inline:1px solid var(--c-border);height:100vh}
+  .category-grid{grid-template-columns:repeat(3,1fr)}
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Screens rendered by JS -->
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ============================================
+   CONFIGURATION
+   ============================================ */
+const CONFIG = {
+  SUPABASE_URL: 'YOUR_SUPABASE_URL',
+  SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
+  DEFAULT_COMMISSION_RATE: 0.12,
+  MAX_QUOTES_PER_ORDER: 8,
+  QUOTE_EXPIRY_HOURS: 24,
+  PAGE_SIZE: 20,
+  DISPATCH_CAP: 20,
+  BAYESIAN_C: 10,
+  BAYESIAN_M: 4.0,
+  MIN_PAYOUT: 10,
+  SUPPORTED_COUNTRIES: {
+    SA: { currency: 'SAR', vat: 0.15, iban_len: 24, name_en: 'Saudi Arabia', name_ar: 'السعودية', name_no: 'Saudi-Arabia', name_sv: 'Saudiarabien' },
+    AE: { currency: 'AED', vat: 0.05, iban_len: 23, name_en: 'UAE', name_ar: 'الإمارات', name_no: 'UAE', name_sv: 'UAE' },
+    KW: { currency: 'KWD', vat: 0, iban_len: 30, name_en: 'Kuwait', name_ar: 'الكويت', name_no: 'Kuwait', name_sv: 'Kuwait' },
+    QA: { currency: 'QAR', vat: 0, iban_len: 29, name_en: 'Qatar', name_ar: 'قطر', name_no: 'Qatar', name_sv: 'Qatar' },
+    BH: { currency: 'BHD', vat: 0, iban_len: 22, name_en: 'Bahrain', name_ar: 'البحرين', name_no: 'Bahrain', name_sv: 'Bahrain' },
+    OM: { currency: 'OMR', vat: 0, iban_len: 23, name_en: 'Oman', name_ar: 'عُمان', name_no: 'Oman', name_sv: 'Oman' },
+    EG: { currency: 'EGP', vat: 0.14, iban_len: 29, name_en: 'Egypt', name_ar: 'مصر', name_no: 'Egypt', name_sv: 'Egypten' },
+    NO: { currency: 'NOK', vat: 0.25, iban_len: 15, name_en: 'Norway', name_ar: 'النرويج', name_no: 'Norge', name_sv: 'Norge' },
+    SE: { currency: 'SEK', vat: 0.25, iban_len: 22, name_en: 'Sweden', name_ar: 'السويد', name_no: 'Sverige', name_sv: 'Sverige' }
+  },
+  SUBSCRIPTION_PLANS: {
+    pro_monthly: { tier: 'pro', period: 'monthly', price: 49 },
+    pro_yearly: { tier: 'pro', period: 'yearly', price: 490 },
+    business_monthly: { tier: 'business', period: 'monthly', price: 149 },
+    business_yearly: { tier: 'business', period: 'yearly', price: 1490 }
+  },
+  BOOST_PLANS: {
+    7: { price: 19 },
+    14: { price: 35 },
+    30: { price: 69 }
+  }
+};
+
+/* ============================================
+   I18N — TRANSLATIONS
+   ============================================ */
+const I18N = {
+  en: {
+    dir: 'ltr',
+    // Auth
+    welcome_back: 'Welcome back',
+    email: 'Email',
+    password: 'Password',
+    login: 'Log in',
+    forgot_password: 'Forgot password?',
+    no_account: "Don't have an account?",
+    sign_up: 'Sign up',
+    full_name: 'Full name',
+    confirm_password: 'Confirm password',
+    create_account: 'Create account',
+    looking_for_service: 'Looking for a service',
+    offering_service: 'Offering a service',
+    agree_terms: 'I agree to the Terms & Conditions',
+    verify_phone: 'Verify your phone',
+    enter_otp: 'Enter the 6-digit code sent to your phone',
+    resend_in: 'Resend in',
+    resend_code: 'Resend code',
+    reset_password: 'Reset password',
+    send_reset_link: 'Send reset link',
+    reset_sent: 'Reset link sent to your email',
+    phone: 'Phone number',
+    phone_login: 'Phone login',
+    email_login: 'Email login',
+    or: 'or',
+    // Navigation
+    home: 'Home',
+    my_orders: 'My Orders',
+    explore: 'Explore',
+    profile: 'Profile',
+    dashboard: 'Dashboard',
+    earnings: 'Earnings',
+    // Home
+    hello: 'Hello',
+    search_services: 'Search services...',
+    recent_orders: 'Recent Orders',
+    view_all: 'View all',
+    // Orders
+    all: 'All',
+    active: 'Active',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
+    no_orders: 'No orders yet',
+    no_orders_desc: 'Your orders will appear here',
+    // Order statuses
+    status_pending: 'Pending',
+    status_quoted: 'Quoted',
+    status_confirmed: 'Confirmed',
+    status_payment_pending: 'Payment Pending',
+    status_in_progress: 'In Progress',
+    status_completed: 'Completed',
+    status_closed: 'Closed',
+    status_cancelled: 'Cancelled',
+    status_disputed: 'Disputed',
+    // Create order
+    new_order: 'New Order',
+    order_title: 'Title',
+    order_title_ph: 'e.g. Fix kitchen faucet',
+    description: 'Description',
+    description_ph: 'Describe the service you need in detail...',
+    location: 'Location',
+    pick_location: 'Pick on map',
+    use_my_location: 'Use my location',
+    budget: 'Budget (optional)',
+    photos: 'Photos (optional)',
+    add_photo: 'Add photo',
+    submit_order: 'Submit Order',
+    // Order detail
+    order_details: 'Order Details',
+    quotes: 'Quotes',
+    no_quotes: 'No quotes yet',
+    waiting_quotes: 'Waiting for provider quotes...',
+    accept: 'Accept',
+    reject: 'Reject',
+    open_chat: 'Open Chat',
+    rate_service: 'Rate Service',
+    open_dispute: 'Open Dispute',
+    cancel_order: 'Cancel Order',
+    pay_now: 'Pay Now',
+    mark_complete: 'Mark Complete',
+    confirm_completion: 'Confirm Completion',
+    // Chat
+    type_message: 'Type a message...',
+    // Payment
+    payment: 'Payment',
+    select_method: 'Select payment method',
+    card: 'Credit/Debit Card',
+    apple_pay: 'Apple Pay',
+    mada: 'Mada',
+    stc_pay: 'STC Pay',
+    cash: 'Cash',
+    vipps: 'Vipps',
+    swish: 'Swish',
+    subtotal: 'Subtotal',
+    vat: 'VAT',
+    total: 'Total',
+    // Review
+    rate_provider: 'Rate your provider',
+    leave_comment: 'Leave a comment (optional)...',
+    submit_review: 'Submit Review',
+    // Provider
+    available: 'Available',
+    unavailable: 'Unavailable',
+    pending_quotes: 'Pending Quotes',
+    active_jobs: 'Active Jobs',
+    earned_today: 'Earned Today',
+    incoming_requests: 'Incoming Requests',
+    submit_quote: 'Submit Quote',
+    your_price: 'Your price',
+    estimated_hours: 'Estimated hours',
+    notes: 'Notes',
+    notes_ph: 'Notes for the customer...',
+    send_quote: 'Send Quote',
+    my_quotes: 'My Quotes',
+    total_balance: 'Total Balance',
+    available_balance: 'Available',
+    pending_balance: 'Pending',
+    request_payout: 'Request Payout',
+    // KYC
+    kyc_title: 'Identity Verification',
+    kyc_not_submitted: 'Please submit your documents to get verified',
+    kyc_pending: 'Your documents are under review',
+    kyc_approved: 'Your identity has been verified',
+    kyc_rejected: 'Your documents were rejected',
+    national_id_front: 'National ID (Front)',
+    national_id_back: 'National ID (Back)',
+    trade_license: 'Trade License (optional)',
+    submit_for_review: 'Submit for Review',
+    upload: 'Upload',
+    // Profile
+    edit_profile: 'Edit Profile',
+    notifications: 'Notifications',
+    payment_wallet: 'Payment & Wallet',
+    security: 'Security',
+    export_data: 'Export My Data',
+    delete_account: 'Delete Account',
+    logout: 'Log out',
+    language: 'Language',
+    app_version: 'Version',
+    save: 'Save',
+    // Provider profile
+    bio: 'Bio',
+    service_categories: 'Service Categories',
+    hourly_rate: 'Hourly Rate',
+    iban: 'IBAN',
+    subscription: 'Subscription',
+    boost: 'Boost',
+    upgrade_to_pro: 'Upgrade to Pro',
+    response_time: 'Usually responds in',
+    minutes: 'minutes',
+    reviews_count: 'reviews',
+    // Admin
+    admin_panel: 'Admin Panel',
+    total_users: 'Total Users',
+    active_orders: 'Active Orders',
+    pending_kyc: 'Pending KYC',
+    open_disputes: 'Open Disputes',
+    users: 'Users',
+    disputes: 'Disputes',
+    reports: 'Reports',
+    search_users: 'Search users...',
+    customer: 'Customer',
+    provider: 'Provider',
+    admin: 'Admin',
+    superadmin: 'Super Admin',
+    banned: 'Banned',
+    ban_user: 'Ban User',
+    unban_user: 'Unban User',
+    ban_reason: 'Ban reason',
+    // Disputes
+    open: 'Open',
+    investigating: 'Investigating',
+    resolved: 'Resolved',
+    customer_favor: 'Customer Favor',
+    provider_favor: 'Provider Favor',
+    settlement: 'Settlement',
+    resolve: 'Resolve',
+    admin_note: 'Admin note',
+    // Reports
+    revenue: 'Revenue',
+    commission: 'Commission',
+    total_orders_label: 'Total Orders',
+    avg_order_value: 'Avg. Order Value',
+    this_month: 'This Month',
+    last_month: 'Last Month',
+    three_months: '3 Months',
+    this_year: 'This Year',
+    from_date: 'From',
+    to_date: 'To',
+    // General
+    loading: 'Loading...',
+    error_occurred: 'An error occurred',
+    retry: 'Retry',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    close: 'Close',
+    back: 'Back',
+    done: 'Done',
+    yes: 'Yes',
+    no: 'No',
+    ok: 'OK',
+    search: 'Search',
+    filter: 'Filter',
+    sort: 'Sort',
+    more: 'More',
+    less: 'Less',
+    ago: 'ago',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    install_app: 'Install App'
+  },
+  ar: {
+    dir: 'rtl',
+    welcome_back: 'مرحبًا بعودتك',
+    email: 'البريد الإلكتروني',
+    password: 'كلمة المرور',
+    login: 'تسجيل الدخول',
+    forgot_password: 'نسيت كلمة المرور؟',
+    no_account: 'ليس لديك حساب؟',
+    sign_up: 'سجّل الآن',
+    full_name: 'الاسم الكامل',
+    confirm_password: 'تأكيد كلمة المرور',
+    create_account: 'إنشاء حساب',
+    looking_for_service: 'أبحث عن خدمة',
+    offering_service: 'أقدم خدمة',
+    agree_terms: 'أوافق على الشروط والأحكام',
+    verify_phone: 'تحقق من هاتفك',
+    enter_otp: 'أدخل الرمز المكون من 6 أرقام المرسل إلى هاتفك',
+    resend_in: 'إعادة الإرسال خلال',
+    resend_code: 'إعادة إرسال الرمز',
+    reset_password: 'إعادة تعيين كلمة المرور',
+    send_reset_link: 'إرسال رابط الاستعادة',
+    reset_sent: 'تم إرسال رابط الاستعادة إلى بريدك',
+    phone: 'رقم الهاتف',
+    phone_login: 'تسجيل بالهاتف',
+    email_login: 'تسجيل بالبريد',
+    or: 'أو',
+    home: 'الرئيسية',
+    my_orders: 'طلباتي',
+    explore: 'استكشف',
+    profile: 'حسابي',
+    dashboard: 'لوحة التحكم',
+    earnings: 'الأرباح',
+    hello: 'مرحباً',
+    search_services: 'ابحث عن خدمات...',
+    recent_orders: 'طلباتك الأخيرة',
+    view_all: 'اعرض الكل',
+    all: 'الكل',
+    active: 'جارية',
+    completed: 'مكتملة',
+    cancelled: 'ملغية',
+    no_orders: 'لا توجد طلبات',
+    no_orders_desc: 'ستظهر طلباتك هنا',
+    status_pending: 'قيد الانتظار',
+    status_quoted: 'تم التسعير',
+    status_confirmed: 'مؤكد',
+    status_payment_pending: 'في انتظار الدفع',
+    status_in_progress: 'جاري التنفيذ',
+    status_completed: 'مكتمل',
+    status_closed: 'مغلق',
+    status_cancelled: 'ملغي',
+    status_disputed: 'متنازع عليه',
+    new_order: 'طلب جديد',
+    order_title: 'العنوان',
+    order_title_ph: 'مثال: إصلاح صنبور المطبخ',
+    description: 'الوصف',
+    description_ph: 'صف الخدمة التي تحتاجها بالتفصيل...',
+    location: 'الموقع',
+    pick_location: 'اختر على الخريطة',
+    use_my_location: 'استخدم موقعي',
+    budget: 'الميزانية (اختياري)',
+    photos: 'صور (اختياري)',
+    add_photo: 'إضافة صورة',
+    submit_order: 'إرسال الطلب',
+    order_details: 'تفاصيل الطلب',
+    quotes: 'العروض',
+    no_quotes: 'لا توجد عروض',
+    waiting_quotes: 'في انتظار عروض المزودين...',
+    accept: 'قبول',
+    reject: 'رفض',
+    open_chat: 'فتح محادثة',
+    rate_service: 'تقييم الخدمة',
+    open_dispute: 'فتح نزاع',
+    cancel_order: 'إلغاء الطلب',
+    pay_now: 'ادفع الآن',
+    mark_complete: 'إتمام العمل',
+    confirm_completion: 'تأكيد الإتمام',
+    type_message: 'اكتب رسالة...',
+    payment: 'الدفع',
+    select_method: 'اختر طريقة الدفع',
+    card: 'بطاقة ائتمان/خصم',
+    apple_pay: 'Apple Pay',
+    mada: 'مدى',
+    stc_pay: 'STC Pay',
+    cash: 'نقداً',
+    vipps: 'Vipps',
+    swish: 'Swish',
+    subtotal: 'المبلغ الفرعي',
+    vat: 'ضريبة القيمة المضافة',
+    total: 'الإجمالي',
+    rate_provider: 'قيّم مزود الخدمة',
+    leave_comment: 'اترك تعليقاً (اختياري)...',
+    submit_review: 'إرسال التقييم',
+    available: 'متاح',
+    unavailable: 'غير متاح',
+    pending_quotes: 'عروض قيد الانتظار',
+    active_jobs: 'مهام نشطة',
+    earned_today: 'أرباح اليوم',
+    incoming_requests: 'طلبات واردة',
+    submit_quote: 'إرسال عرض سعر',
+    your_price: 'سعرك',
+    estimated_hours: 'الساعات التقديرية',
+    notes: 'ملاحظات',
+    notes_ph: 'ملاحظات للعميل...',
+    send_quote: 'إرسال العرض',
+    my_quotes: 'عروضي',
+    total_balance: 'الرصيد الإجمالي',
+    available_balance: 'متاح',
+    pending_balance: 'معلّق',
+    request_payout: 'طلب سحب',
+    kyc_title: 'التحقق من الهوية',
+    kyc_not_submitted: 'يرجى إرسال مستنداتك للتحقق',
+    kyc_pending: 'مستنداتك قيد المراجعة',
+    kyc_approved: 'تم التحقق من هويتك',
+    kyc_rejected: 'تم رفض مستنداتك',
+    national_id_front: 'الهوية الوطنية (أمام)',
+    national_id_back: 'الهوية الوطنية (خلف)',
+    trade_license: 'الرخصة التجارية (اختياري)',
+    submit_for_review: 'إرسال للمراجعة',
+    upload: 'رفع',
+    edit_profile: 'تعديل الملف الشخصي',
+    notifications: 'الإشعارات',
+    payment_wallet: 'الدفع والمحفظة',
+    security: 'الأمان',
+    export_data: 'تصدير بياناتي',
+    delete_account: 'حذف الحساب',
+    logout: 'تسجيل الخروج',
+    language: 'اللغة',
+    app_version: 'الإصدار',
+    save: 'حفظ',
+    bio: 'نبذة',
+    service_categories: 'فئات الخدمة',
+    hourly_rate: 'سعر الساعة',
+    iban: 'الآيبان',
+    subscription: 'الاشتراك',
+    boost: 'تعزيز',
+    upgrade_to_pro: 'ترقية إلى Pro',
+    response_time: 'عادةً يرد خلال',
+    minutes: 'دقيقة',
+    reviews_count: 'تقييم',
+    admin_panel: 'لوحة الإدارة',
+    total_users: 'إجمالي المستخدمين',
+    active_orders: 'طلبات نشطة',
+    pending_kyc: 'تحقق معلّق',
+    open_disputes: 'نزاعات مفتوحة',
+    users: 'المستخدمون',
+    disputes: 'النزاعات',
+    reports: 'التقارير',
+    search_users: 'بحث عن مستخدمين...',
+    customer: 'عميل',
+    provider: 'مزوّد',
+    admin: 'مشرف',
+    superadmin: 'مشرف عام',
+    banned: 'محظور',
+    ban_user: 'حظر المستخدم',
+    unban_user: 'رفع الحظر',
+    ban_reason: 'سبب الحظر',
+    open: 'مفتوحة',
+    investigating: 'جارية',
+    resolved: 'محلولة',
+    customer_favor: 'لصالح العميل',
+    provider_favor: 'لصالح المزوّد',
+    settlement: 'تسوية',
+    resolve: 'حل',
+    admin_note: 'ملاحظة المشرف',
+    revenue: 'الإيرادات',
+    commission: 'العمولة',
+    total_orders_label: 'إجمالي الطلبات',
+    avg_order_value: 'متوسط قيمة الطلب',
+    this_month: 'هذا الشهر',
+    last_month: 'الشهر الماضي',
+    three_months: '3 أشهر',
+    this_year: 'هذه السنة',
+    from_date: 'من',
+    to_date: 'إلى',
+    loading: 'جاري التحميل...',
+    error_occurred: 'حدث خطأ',
+    retry: 'إعادة المحاولة',
+    confirm: 'تأكيد',
+    cancel: 'إلغاء',
+    close: 'إغلاق',
+    back: 'رجوع',
+    done: 'تم',
+    yes: 'نعم',
+    no: 'لا',
+    ok: 'حسناً',
+    search: 'بحث',
+    filter: 'تصفية',
+    sort: 'ترتيب',
+    more: 'المزيد',
+    less: 'أقل',
+    ago: 'مضت',
+    today: 'اليوم',
+    yesterday: 'أمس',
+    install_app: 'تثبيت التطبيق'
+  },
+  no: {
+    dir: 'ltr',
+    welcome_back: 'Velkommen tilbake',
+    email: 'E-post',
+    password: 'Passord',
+    login: 'Logg inn',
+    forgot_password: 'Glemt passord?',
+    no_account: 'Har du ikke en konto?',
+    sign_up: 'Registrer deg',
+    full_name: 'Fullt navn',
+    confirm_password: 'Bekreft passord',
+    create_account: 'Opprett konto',
+    looking_for_service: 'Ser etter en tjeneste',
+    offering_service: 'Tilbyr en tjeneste',
+    agree_terms: 'Jeg godtar vilkårene',
+    verify_phone: 'Bekreft telefonen din',
+    enter_otp: 'Skriv inn 6-sifret kode sendt til telefonen din',
+    resend_in: 'Send på nytt om',
+    resend_code: 'Send kode på nytt',
+    reset_password: 'Tilbakestill passord',
+    send_reset_link: 'Send tilbakestillingslenke',
+    reset_sent: 'Tilbakestillingslenke sendt til e-posten din',
+    phone: 'Telefonnummer',
+    phone_login: 'Telefoninnlogging',
+    email_login: 'E-postinnlogging',
+    or: 'eller',
+    home: 'Hjem',
+    my_orders: 'Mine bestillinger',
+    explore: 'Utforsk',
+    profile: 'Profil',
+    dashboard: 'Dashbord',
+    earnings: 'Inntekter',
+    hello: 'Hei',
+    search_services: 'Søk etter tjenester...',
+    recent_orders: 'Nylige bestillinger',
+    view_all: 'Vis alle',
+    all: 'Alle',
+    active: 'Aktive',
+    completed: 'Fullført',
+    cancelled: 'Avbrutt',
+    no_orders: 'Ingen bestillinger ennå',
+    no_orders_desc: 'Bestillingene dine vises her',
+    status_pending: 'Venter',
+    status_quoted: 'Tilbudt',
+    status_confirmed: 'Bekreftet',
+    status_payment_pending: 'Venter på betaling',
+    status_in_progress: 'Pågår',
+    status_completed: 'Fullført',
+    status_closed: 'Lukket',
+    status_cancelled: 'Avbrutt',
+    status_disputed: 'Omstridt',
+    new_order: 'Ny bestilling',
+    order_title: 'Tittel',
+    order_title_ph: 'F.eks. Fiks kjøkkenkran',
+    description: 'Beskrivelse',
+    description_ph: 'Beskriv tjenesten du trenger i detalj...',
+    location: 'Sted',
+    pick_location: 'Velg på kart',
+    use_my_location: 'Bruk min posisjon',
+    budget: 'Budsjett (valgfritt)',
+    photos: 'Bilder (valgfritt)',
+    add_photo: 'Legg til bilde',
+    submit_order: 'Send bestilling',
+    order_details: 'Bestillingsdetaljer',
+    quotes: 'Tilbud',
+    no_quotes: 'Ingen tilbud ennå',
+    waiting_quotes: 'Venter på tilbud fra leverandører...',
+    accept: 'Godta',
+    reject: 'Avvis',
+    open_chat: 'Åpne chat',
+    rate_service: 'Vurder tjenesten',
+    open_dispute: 'Åpne tvist',
+    cancel_order: 'Avbryt bestilling',
+    pay_now: 'Betal nå',
+    mark_complete: 'Merk som fullført',
+    confirm_completion: 'Bekreft fullføring',
+    type_message: 'Skriv en melding...',
+    payment: 'Betaling',
+    select_method: 'Velg betalingsmetode',
+    card: 'Kreditt-/debetkort',
+    apple_pay: 'Apple Pay',
+    mada: 'Mada',
+    stc_pay: 'STC Pay',
+    cash: 'Kontant',
+    vipps: 'Vipps',
+    swish: 'Swish',
+    subtotal: 'Delsum',
+    vat: 'MVA',
+    total: 'Totalt',
+    rate_provider: 'Vurder leverandøren',
+    leave_comment: 'Legg igjen en kommentar (valgfritt)...',
+    submit_review: 'Send vurdering',
+    available: 'Tilgjengelig',
+    unavailable: 'Utilgjengelig',
+    pending_quotes: 'Ventende tilbud',
+    active_jobs: 'Aktive jobber',
+    earned_today: 'Tjent i dag',
+    incoming_requests: 'Innkommende forespørsler',
+    submit_quote: 'Send tilbud',
+    your_price: 'Din pris',
+    estimated_hours: 'Estimerte timer',
+    notes: 'Notater',
+    notes_ph: 'Notater til kunden...',
+    send_quote: 'Send tilbud',
+    my_quotes: 'Mine tilbud',
+    total_balance: 'Total saldo',
+    available_balance: 'Tilgjengelig',
+    pending_balance: 'Ventende',
+    request_payout: 'Be om utbetaling',
+    kyc_title: 'Identitetsverifisering',
+    kyc_not_submitted: 'Vennligst send inn dokumentene dine for verifisering',
+    kyc_pending: 'Dokumentene dine er under gjennomgang',
+    kyc_approved: 'Identiteten din er verifisert',
+    kyc_rejected: 'Dokumentene dine ble avvist',
+    national_id_front: 'Nasjonal ID (forside)',
+    national_id_back: 'Nasjonal ID (bakside)',
+    trade_license: 'Næringslisens (valgfritt)',
+    submit_for_review: 'Send til gjennomgang',
+    upload: 'Last opp',
+    edit_profile: 'Rediger profil',
+    notifications: 'Varsler',
+    payment_wallet: 'Betaling og lommebok',
+    security: 'Sikkerhet',
+    export_data: 'Eksporter mine data',
+    delete_account: 'Slett konto',
+    logout: 'Logg ut',
+    language: 'Språk',
+    app_version: 'Versjon',
+    save: 'Lagre',
+    bio: 'Bio',
+    service_categories: 'Tjenestekategorier',
+    hourly_rate: 'Timepris',
+    iban: 'IBAN',
+    subscription: 'Abonnement',
+    boost: 'Boost',
+    upgrade_to_pro: 'Oppgrader til Pro',
+    response_time: 'Svarer vanligvis innen',
+    minutes: 'minutter',
+    reviews_count: 'vurderinger',
+    admin_panel: 'Adminpanel',
+    total_users: 'Totalt brukere',
+    active_orders: 'Aktive bestillinger',
+    pending_kyc: 'Ventende KYC',
+    open_disputes: 'Åpne tvister',
+    users: 'Brukere',
+    disputes: 'Tvister',
+    reports: 'Rapporter',
+    search_users: 'Søk brukere...',
+    customer: 'Kunde',
+    provider: 'Leverandør',
+    admin: 'Admin',
+    superadmin: 'Superadmin',
+    banned: 'Utestengt',
+    ban_user: 'Utesteng bruker',
+    unban_user: 'Opphev utestenging',
+    ban_reason: 'Grunn for utestenging',
+    open: 'Åpne',
+    investigating: 'Under etterforskning',
+    resolved: 'Løst',
+    customer_favor: 'Kundens favør',
+    provider_favor: 'Leverandørens favør',
+    settlement: 'Forlik',
+    resolve: 'Løs',
+    admin_note: 'Adminnotat',
+    revenue: 'Inntekter',
+    commission: 'Provisjon',
+    total_orders_label: 'Totale bestillinger',
+    avg_order_value: 'Gj.snitt bestillingsverdi',
+    this_month: 'Denne måneden',
+    last_month: 'Forrige måned',
+    three_months: '3 måneder',
+    this_year: 'I år',
+    from_date: 'Fra',
+    to_date: 'Til',
+    loading: 'Laster...',
+    error_occurred: 'En feil oppstod',
+    retry: 'Prøv igjen',
+    confirm: 'Bekreft',
+    cancel: 'Avbryt',
+    close: 'Lukk',
+    back: 'Tilbake',
+    done: 'Ferdig',
+    yes: 'Ja',
+    no: 'Nei',
+    ok: 'OK',
+    search: 'Søk',
+    filter: 'Filter',
+    sort: 'Sorter',
+    more: 'Mer',
+    less: 'Mindre',
+    ago: 'siden',
+    today: 'I dag',
+    yesterday: 'I går',
+    install_app: 'Installer app'
+  },
+  sv: {
+    dir: 'ltr',
+    welcome_back: 'Välkommen tillbaka',
+    email: 'E-post',
+    password: 'Lösenord',
+    login: 'Logga in',
+    forgot_password: 'Glömt lösenord?',
+    no_account: 'Har du inget konto?',
+    sign_up: 'Registrera dig',
+    full_name: 'Fullständigt namn',
+    confirm_password: 'Bekräfta lösenord',
+    create_account: 'Skapa konto',
+    looking_for_service: 'Letar efter en tjänst',
+    offering_service: 'Erbjuder en tjänst',
+    agree_terms: 'Jag godkänner villkoren',
+    verify_phone: 'Verifiera din telefon',
+    enter_otp: 'Ange den 6-siffriga koden som skickats till din telefon',
+    resend_in: 'Skicka igen om',
+    resend_code: 'Skicka kod igen',
+    reset_password: 'Återställ lösenord',
+    send_reset_link: 'Skicka återställningslänk',
+    reset_sent: 'Återställningslänk skickad till din e-post',
+    phone: 'Telefonnummer',
+    phone_login: 'Telefoninloggning',
+    email_login: 'E-postinloggning',
+    or: 'eller',
+    home: 'Hem',
+    my_orders: 'Mina beställningar',
+    explore: 'Utforska',
+    profile: 'Profil',
+    dashboard: 'Instrumentpanel',
+    earnings: 'Intäkter',
+    hello: 'Hej',
+    search_services: 'Sök tjänster...',
+    recent_orders: 'Senaste beställningar',
+    view_all: 'Visa alla',
+    all: 'Alla',
+    active: 'Aktiva',
+    completed: 'Slutförda',
+    cancelled: 'Avbrutna',
+    no_orders: 'Inga beställningar ännu',
+    no_orders_desc: 'Dina beställningar visas här',
+    status_pending: 'Väntar',
+    status_quoted: 'Offererad',
+    status_confirmed: 'Bekräftad',
+    status_payment_pending: 'Väntar på betalning',
+    status_in_progress: 'Pågående',
+    status_completed: 'Slutförd',
+    status_closed: 'Stängd',
+    status_cancelled: 'Avbruten',
+    status_disputed: 'Omtvistad',
+    new_order: 'Ny beställning',
+    order_title: 'Titel',
+    order_title_ph: 'T.ex. Fixa köks kran',
+    description: 'Beskrivning',
+    description_ph: 'Beskriv tjänsten du behöver i detalj...',
+    location: 'Plats',
+    pick_location: 'Välj på karta',
+    use_my_location: 'Använd min plats',
+    budget: 'Budget (valfritt)',
+    photos: 'Bilder (valfritt)',
+    add_photo: 'Lägg till bild',
+    submit_order: 'Skicka beställning',
+    order_details: 'Beställningsdetaljer',
+    quotes: 'Offerter',
+    no_quotes: 'Inga offerter ännu',
+    waiting_quotes: 'Väntar på offerter från leverantörer...',
+    accept: 'Acceptera',
+    reject: 'Avvisa',
+    open_chat: 'Öppna chatt',
+    rate_service: 'Betygsätt tjänsten',
+    open_dispute: 'Öppna tvist',
+    cancel_order: 'Avbryt beställning',
+    pay_now: 'Betala nu',
+    mark_complete: 'Markera som klar',
+    confirm_completion: 'Bekräfta slutförande',
+    type_message: 'Skriv ett meddelande...',
+    payment: 'Betalning',
+    select_method: 'Välj betalningsmetod',
+    card: 'Kredit-/betalkort',
+    apple_pay: 'Apple Pay',
+    mada: 'Mada',
+    stc_pay: 'STC Pay',
+    cash: 'Kontant',
+    vipps: 'Vipps',
+    swish: 'Swish',
+    subtotal: 'Delsumma',
+    vat: 'Moms',
+    total: 'Totalt',
+    rate_provider: 'Betygsätt leverantören',
+    leave_comment: 'Lämna en kommentar (valfritt)...',
+    submit_review: 'Skicka betyg',
+    available: 'Tillgänglig',
+    unavailable: 'Otillgänglig',
+    pending_quotes: 'Väntande offerter',
+    active_jobs: 'Aktiva jobb',
+    earned_today: 'Tjänat idag',
+    incoming_requests: 'Inkommande förfrågningar',
+    submit_quote: 'Skicka offert',
+    your_price: 'Ditt pris',
+    estimated_hours: 'Uppskattade timmar',
+    notes: 'Anteckningar',
+    notes_ph: 'Anteckningar till kunden...',
+    send_quote: 'Skicka offert',
+    my_quotes: 'Mina offerter',
+    total_balance: 'Totalt saldo',
+    available_balance: 'Tillgängligt',
+    pending_balance: 'Väntande',
+    request_payout: 'Begär utbetalning',
+    kyc_title: 'Identitetsverifiering',
+    kyc_not_submitted: 'Vänligen skicka in dina dokument för verifiering',
+    kyc_pending: 'Dina dokument granskas',
+    kyc_approved: 'Din identitet har verifierats',
+    kyc_rejected: 'Dina dokument avvisades',
+    national_id_front: 'Nationellt ID (framsida)',
+    national_id_back: 'Nationellt ID (baksida)',
+    trade_license: 'Handelslicens (valfritt)',
+    submit_for_review: 'Skicka för granskning',
+    upload: 'Ladda upp',
+    edit_profile: 'Redigera profil',
+    notifications: 'Aviseringar',
+    payment_wallet: 'Betalning & plånbok',
+    security: 'Säkerhet',
+    export_data: 'Exportera mina data',
+    delete_account: 'Radera konto',
+    logout: 'Logga ut',
+    language: 'Språk',
+    app_version: 'Version',
+    save: 'Spara',
+    bio: 'Bio',
+    service_categories: 'Tjänstekategorier',
+    hourly_rate: 'Timpris',
+    iban: 'IBAN',
+    subscription: 'Prenumeration',
+    boost: 'Boost',
+    upgrade_to_pro: 'Uppgradera till Pro',
+    response_time: 'Svarar vanligtvis inom',
+    minutes: 'minuter',
+    reviews_count: 'omdömen',
+    admin_panel: 'Adminpanel',
+    total_users: 'Totala användare',
+    active_orders: 'Aktiva beställningar',
+    pending_kyc: 'Väntande KYC',
+    open_disputes: 'Öppna tvister',
+    users: 'Användare',
+    disputes: 'Tvister',
+    reports: 'Rapporter',
+    search_users: 'Sök användare...',
+    customer: 'Kund',
+    provider: 'Leverantör',
+    admin: 'Admin',
+    superadmin: 'Superadmin',
+    banned: 'Avstängd',
+    ban_user: 'Stäng av användare',
+    unban_user: 'Häv avstängning',
+    ban_reason: 'Anledning för avstängning',
+    open: 'Öppna',
+    investigating: 'Under utredning',
+    resolved: 'Löst',
+    customer_favor: 'Kundens fördel',
+    provider_favor: 'Leverantörens fördel',
+    settlement: 'Förlikning',
+    resolve: 'Lös',
+    admin_note: 'Adminanteckning',
+    revenue: 'Intäkter',
+    commission: 'Provision',
+    total_orders_label: 'Totala beställningar',
+    avg_order_value: 'Gns. beställningsvärde',
+    this_month: 'Denna månad',
+    last_month: 'Förra månaden',
+    three_months: '3 månader',
+    this_year: 'I år',
+    from_date: 'Från',
+    to_date: 'Till',
+    loading: 'Laddar...',
+    error_occurred: 'Ett fel uppstod',
+    retry: 'Försök igen',
+    confirm: 'Bekräfta',
+    cancel: 'Avbryt',
+    close: 'Stäng',
+    back: 'Tillbaka',
+    done: 'Klar',
+    yes: 'Ja',
+    no: 'Nej',
+    ok: 'OK',
+    search: 'Sök',
+    filter: 'Filtrera',
+    sort: 'Sortera',
+    more: 'Mer',
+    less: 'Mindre',
+    ago: 'sedan',
+    today: 'Idag',
+    yesterday: 'Igår',
+    install_app: 'Installera app'
+  }
+};
+
+/* ============================================
+   STATE MANAGEMENT
+   ============================================ */
+const state = {
+  lang: 'en',
+  user: null,
+  profile: null,
+  providerProfile: null,
+  categories: [],
+  orders: [],
+  currentOrder: null,
+  currentQuotes: [],
+  conversations: [],
+  currentConversation: null,
+  currentMessages: [],
+  flags: {},
+  route: 'login',
+  routeParams: {},
+  routeHistory: [],
+  activeTab: 'home',
+  loading: {},
+  subscriptions: []
+};
+
+function t(key) {
+  return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key;
+}
+
+function getCategoryName(cat) {
+  if (!cat) return '';
+  const key = `name_${state.lang}`;
+  return cat[key] || cat.name_en || '';
+}
+
+/* ============================================
+   SUPABASE CLIENT
+   ============================================ */
+const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function formatCurrency(amount, currency) {
+  try {
+    return new Intl.NumberFormat(state.lang === 'ar' ? 'ar-SA' : state.lang === 'no' ? 'nb-NO' : state.lang === 'sv' ? 'sv-SE' : 'en-US', {
+      style: 'currency', currency: currency || 'SAR', minimumFractionDigits: 0, maximumFractionDigits: 2
+    }).format(amount || 0);
+  } catch { return `${amount} ${currency}`; }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const loc = state.lang === 'ar' ? 'ar-SA' : state.lang === 'no' ? 'nb-NO' : state.lang === 'sv' ? 'sv-SE' : 'en-US';
+  return d.toLocaleDateString(loc, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return t('today');
+  if (mins < 60) return `${mins}m ${t('ago')}`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ${t('ago')}`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return t('yesterday');
+  return `${days}d ${t('ago')}`;
+}
+
+function statusBadge(status) {
+  const map = {
+    pending: 'badge-warning', quoted: 'badge-info', confirmed: 'badge-primary',
+    payment_pending: 'badge-warning', in_progress: 'badge-primary',
+    completed: 'badge-success', closed: 'badge-neutral',
+    cancelled: 'badge-danger', disputed: 'badge-danger'
+  };
+  return `<span class="badge ${map[status] || 'badge-neutral'}">${t('status_' + status)}</span>`;
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function showToast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function setLoading(key, val) {
+  state.loading[key] = val;
+}
+
+function debounce(fn, ms) {
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+/* ============================================
+   ROUTER
+   ============================================ */
+function navigate(route, params = {}) {
+  if (state.route !== route) {
+    state.routeHistory.push({ route: state.route, params: state.routeParams });
+  }
+  state.route = route;
+  state.routeParams = params;
+  window.location.hash = route;
+  render();
+}
+
+function goBack() {
+  const prev = state.routeHistory.pop();
+  if (prev) {
+    state.route = prev.route;
+    state.routeParams = prev.params;
+    window.location.hash = prev.route;
+    render();
+  }
+}
+
+function getDefaultRoute() {
+  if (!state.user) return 'login';
+  const role = state.profile?.role;
+  if (role === 'admin' || role === 'superadmin') return 'admin-dashboard';
+  if (role === 'provider') return 'provider-dashboard';
+  return 'home';
+}
+
+/* ============================================
+   AUTH FUNCTIONS
+   ============================================ */
+async function handleLogin(email, password) {
+  setLoading('auth', true);
+  render();
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  setLoading('auth', false);
+  if (error) { showToast(error.message, 'error'); render(); return; }
+  await loadUserProfile();
+  navigate(getDefaultRoute());
+}
+
+async function handleRegister(name, email, password, role) {
+  setLoading('auth', true);
+  render();
+  const { data, error } = await supabase.auth.signUp({
+    email, password,
+    options: { data: { display_name: name, role } }
+  });
+  setLoading('auth', false);
+  if (error) { showToast(error.message, 'error'); render(); return; }
+  if (data.user) {
+    await loadUserProfile();
+    navigate(getDefaultRoute());
+  }
+}
+
+async function handleLogout() {
+  await supabase.auth.signOut();
+  state.user = null;
+  state.profile = null;
+  state.providerProfile = null;
+  state.orders = [];
+  state.routeHistory = [];
+  navigate('login');
+}
+
+async function handleResetPassword(email) {
+  setLoading('auth', true);
+  render();
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  setLoading('auth', false);
+  if (error) { showToast(error.message, 'error'); } else { showToast(t('reset_sent'), 'info'); }
+  render();
+}
+
+async function loadUserProfile() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  state.user = user;
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  state.profile = profile;
+  if (profile?.role === 'provider') {
+    const { data: pp } = await supabase.from('provider_profiles').select('*').eq('id', user.id).single();
+    state.providerProfile = pp;
+  }
+}
+
+/* ============================================
+   DATA FUNCTIONS
+   ============================================ */
+async function loadCategories() {
+  const { data } = await supabase.from('categories').select('*').eq('is_active', true).order('sort_order');
+  state.categories = data || [];
+}
+
+async function loadOrders(filter = 'all') {
+  if (!state.user) return;
+  setLoading('orders', true);
+  render();
+  let q = supabase.from('orders').select('*, categories(*)');
+  const role = state.profile?.role;
+  if (role === 'customer') q = q.eq('customer_id', state.user.id);
+  else if (role === 'provider') q = q.eq('provider_id', state.user.id);
+  if (filter === 'active') q = q.in('status', ['pending', 'quoted', 'confirmed', 'payment_pending', 'in_progress']);
+  else if (filter === 'completed') q = q.in('status', ['completed', 'closed']);
+  else if (filter === 'cancelled') q = q.eq('status', 'cancelled');
+  q = q.order('created_at', { ascending: false }).limit(CONFIG.PAGE_SIZE);
+  const { data } = await q;
+  state.orders = data || [];
+  setLoading('orders', false);
+  render();
+}
+
+async function loadOrder(id) {
+  const { data: order } = await supabase.from('orders').select('*, categories(*)').eq('id', id).single();
+  state.currentOrder = order;
+  const { data: quotes } = await supabase.from('quotes').select('*, profiles:provider_id(display_name, photo_url)').eq('order_id', id).order('created_at');
+  state.currentQuotes = quotes || [];
+}
+
+async function createOrder(formData) {
+  setLoading('createOrder', true);
+  render();
+  const { data, error } = await supabase.rpc('create_order', {
+    p_category_id: formData.categoryId,
+    p_title: formData.title,
+    p_description: formData.description,
+    p_lat: formData.lat,
+    p_lng: formData.lng,
+    p_address: formData.address,
+    p_geohash: formData.geohash || 'u4pru',
+    p_budget: formData.budget || null,
+    p_currency: formData.currency || 'SAR'
+  });
+  setLoading('createOrder', false);
+  if (error) { showToast(error.message, 'error'); render(); return; }
+  showToast(t('done'), 'success');
+  navigate('orders');
+}
+
+async function submitQuote(orderId, price, estimatedHours, notes) {
+  setLoading('submitQuote', true);
+  render();
+  const { error } = await supabase.rpc('submit_quote', {
+    p_order_id: orderId, p_price: price,
+    p_estimated_hours: estimatedHours || null, p_notes: notes || null
+  });
+  setLoading('submitQuote', false);
+  if (error) { showToast(error.message, 'error'); } else { showToast(t('done'), 'success'); goBack(); }
+  render();
+}
+
+async function acceptQuote(orderId, quoteId) {
+  const { error } = await supabase.rpc('accept_quote', { p_order_id: orderId, p_quote_id: quoteId });
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  await loadOrder(orderId);
+  render();
+}
+
+async function cancelOrder(orderId) {
+  const { error } = await supabase.rpc('cancel_order', { p_order_id: orderId });
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  navigate('orders');
+}
+
+async function markComplete(orderId) {
+  const { error } = await supabase.rpc('mark_order_complete', { p_order_id: orderId });
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  await loadOrder(orderId);
+  render();
+}
+
+async function confirmCompletion(orderId) {
+  const { error } = await supabase.rpc('confirm_completion', { p_order_id: orderId });
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  await loadOrder(orderId);
+  render();
+}
+
+async function handleSubmitReview(orderId, rating, comment) {
+  const { error } = await supabase.rpc('submit_review', {
+    p_order_id: orderId, p_rating: rating, p_comment: comment || null
+  });
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  goBack();
+}
+
+async function handleOpenDispute(orderId, reason) {
+  const { error } = await supabase.rpc('open_dispute', {
+    p_order_id: orderId, p_reason: reason
+  });
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  await loadOrder(orderId);
+  render();
+}
+
+// Chat
+async function loadConversations() {
+  if (!state.user) return;
+  const { data } = await supabase.from('conversations').select('*')
+    .contains('participants', [state.user.id]).order('last_message_at', { ascending: false });
+  state.conversations = data || [];
+}
+
+async function loadMessages(convId) {
+  const { data } = await supabase.from('messages').select('*')
+    .eq('conversation_id', convId).order('created_at', { ascending: true }).limit(50);
+  state.currentMessages = data || [];
+}
+
+async function sendMessage(convId, text) {
+  if (!text.trim()) return;
+  const { error } = await supabase.from('messages').insert({
+    conversation_id: convId, sender_id: state.user.id, text: text.trim(), type: 'text'
+  });
+  if (error) { showToast(error.message, 'error'); return; }
+  await supabase.from('conversations').update({
+    last_message: text.trim(), last_message_at: new Date().toISOString()
+  }).eq('id', convId);
+}
+
+// Admin
+async function loadAdminUsers(search = '') {
+  let q = supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(CONFIG.PAGE_SIZE);
+  if (search) q = q.ilike('display_name', `%${search}%`);
+  const { data } = await q;
+  return data || [];
+}
+
+async function loadAdminDisputes(filter = 'all') {
+  let q = supabase.from('disputes').select('*, orders(title)').order('created_at', { ascending: false });
+  if (filter !== 'all') q = q.eq('status', filter);
+  const { data } = await q;
+  return data || [];
+}
+
+async function adminBanUser(userId, ban, reason) {
+  const { error } = await supabase.rpc('admin_ban_user', {
+    p_user_id: userId, p_ban: ban, p_reason: reason || null
+  });
+  if (error) showToast(error.message, 'error');
+  else showToast(t('done'), 'success');
+}
+
+async function adminKycDecision(uid, approved, reason) {
+  const { error } = await supabase.rpc('admin_kyc_decision', {
+    p_uid: uid, p_approved: approved, p_reason: reason || null
+  });
+  if (error) showToast(error.message, 'error');
+  else showToast(t('done'), 'success');
+}
+
+async function adminResolveDispute(disputeId, resolution, note) {
+  const { error } = await supabase.rpc('resolve_dispute', {
+    p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null
+  });
+  if (error) showToast(error.message, 'error');
+  else showToast(t('done'), 'success');
+}
+
+// Feature flags
+async function loadFlags() {
+  const { data } = await supabase.from('feature_flags').select('*');
+  if (data) data.forEach(f => state.flags[f.key] = f.enabled);
+}
+
+// Provider orders (incoming, not yet quoted)
+async function loadIncomingRequests() {
+  const { data } = await supabase.from('orders').select('*, categories(*)')
+    .in('status', ['pending', 'quoted']).order('created_at', { ascending: false }).limit(20);
+  return data || [];
+}
+
+// Provider earnings
+async function loadEarnings() {
+  if (!state.user) return { available: 0, pending: 0, history: [] };
+  const { data } = await supabase.from('payments').select('*')
+    .eq('provider_id', state.user.id).eq('status', 'captured').order('created_at', { ascending: false });
+  const history = data || [];
+  const available = history.reduce((s, p) => s + (p.net_amount || 0), 0);
+  return { available, pending: 0, history };
+}
+
+/* ============================================
+   REALTIME SUBSCRIPTIONS
+   ============================================ */
+let realtimeChannels = [];
+
+function setupRealtime() {
+  cleanupRealtime();
+  if (!state.user) return;
+
+  // Listen to messages in current conversation
+  if (state.currentConversation) {
+    const ch = supabase.channel(`messages:${state.currentConversation}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'messages',
+        filter: `conversation_id=eq.${state.currentConversation}`
+      }, payload => {
+        state.currentMessages.push(payload.new);
+        render();
+        const msgList = $('.chat-messages');
+        if (msgList) msgList.scrollTop = msgList.scrollHeight;
+      }).subscribe();
+    realtimeChannels.push(ch);
+  }
+
+  // Listen to order updates
+  const orderCh = supabase.channel('order-updates')
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'orders'
+    }, payload => {
+      const idx = state.orders.findIndex(o => o.id === payload.new.id);
+      if (idx >= 0) { state.orders[idx] = { ...state.orders[idx], ...payload.new }; render(); }
+      if (state.currentOrder?.id === payload.new.id) {
+        state.currentOrder = { ...state.currentOrder, ...payload.new };
+        render();
+      }
+    }).subscribe();
+  realtimeChannels.push(orderCh);
+}
+
+function cleanupRealtime() {
+  realtimeChannels.forEach(ch => supabase.removeChannel(ch));
+  realtimeChannels = [];
+}
+
+/* ============================================
+   SCREEN RENDERERS
+   ============================================ */
+
+function renderLogin() {
+  const isPhone = state.routeParams.phoneLogin;
+  return `
+    <div class="screen active" style="justify-content:center">
+      <div class="content-padded" style="max-width:400px;margin:0 auto;width:100%">
+        <div style="text-align:center;margin-bottom:var(--space-xl)">
+          <div style="font-size:48px;margin-bottom:var(--space-md)">🔧</div>
+          <h1 style="font-size:var(--font-xxl);font-weight:800;margin-bottom:var(--space-xs)">WorkFix</h1>
+          <p style="color:var(--c-text-secondary)">${t('welcome_back')}</p>
+        </div>
+        <div id="login-form">
+          ${isPhone ? `
+            <div class="input-group">
+              <label class="input-label">${t('phone')}</label>
+              <input class="input" type="tel" id="login-phone" placeholder="+966..." dir="ltr">
+            </div>
+          ` : `
+            <div class="input-group">
+              <label class="input-label">${t('email')}</label>
+              <input class="input" type="email" id="login-email" placeholder="name@example.com" dir="ltr" autocomplete="email">
+            </div>
+            <div class="input-group">
+              <label class="input-label">${t('password')}</label>
+              <input class="input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+            </div>
+          `}
+          <button class="btn btn-primary btn-full btn-lg" id="login-btn" ${state.loading.auth ? 'disabled' : ''}>
+            ${state.loading.auth ? '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>' : t('login')}
+          </button>
+          <div style="text-align:center;margin-top:var(--space-md)">
+            <a href="javascript:void(0)" id="forgot-link" style="font-size:var(--font-sm)">${t('forgot_password')}</a>
+          </div>
+          <div style="text-align:center;margin-top:var(--space-sm)">
+            <a href="javascript:void(0)" id="toggle-login-method" style="font-size:var(--font-sm)">
+              ${isPhone ? t('email_login') : t('phone_login')}
+            </a>
+          </div>
+          <div style="text-align:center;margin-top:var(--space-lg)">
+            <span style="color:var(--c-text-secondary);font-size:var(--font-sm)">${t('no_account')} </span>
+            <a href="javascript:void(0)" id="register-link" style="font-weight:600;font-size:var(--font-sm)">${t('sign_up')}</a>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderRegister() {
+  const selectedRole = state.routeParams.selectedRole || '';
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="navigate('login')">←</div>
+        <div class="header-title">${t('create_account')}</div>
+      </div>
+      <div class="content content-padded" style="max-width:400px;margin:0 auto;width:100%">
+        <div class="input-group">
+          <label class="input-label">${t('full_name')}</label>
+          <input class="input" type="text" id="reg-name" placeholder="${t('full_name')}" autocomplete="name">
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('email')}</label>
+          <input class="input" type="email" id="reg-email" placeholder="name@example.com" dir="ltr" autocomplete="email">
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('password')}</label>
+          <input class="input" type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('confirm_password')}</label>
+          <input class="input" type="password" id="reg-confirm" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div class="input-group">
+          <label class="input-label" style="margin-bottom:var(--space-sm)">${t('looking_for_service')} ${t('or')} ${t('offering_service')}?</label>
+          <div style="display:flex;gap:var(--space-sm)">
+            <div class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'customer' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
+                 onclick="state.routeParams.selectedRole='customer';render()">
+              <div style="font-size:28px;margin-bottom:var(--space-xs)">🏠</div>
+              <div style="font-weight:600;font-size:var(--font-sm)">${t('looking_for_service')}</div>
+            </div>
+            <div class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'provider' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
+                 onclick="state.routeParams.selectedRole='provider';render()">
+              <div style="font-size:28px;margin-bottom:var(--space-xs)">🔧</div>
+              <div style="font-weight:600;font-size:var(--font-sm)">${t('offering_service')}</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-lg)">
+          <input type="checkbox" id="reg-terms" style="width:18px;height:18px;accent-color:var(--c-primary)">
+          <label for="reg-terms" style="font-size:var(--font-sm);color:var(--c-text-secondary)">${t('agree_terms')}</label>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" id="register-btn" ${state.loading.auth ? 'disabled' : ''}>
+          ${state.loading.auth ? '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>' : t('create_account')}
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderForgotPassword() {
+  return `
+    <div class="screen active" style="justify-content:center">
+      <div class="content-padded" style="max-width:400px;margin:0 auto;width:100%">
+        <div class="header-back" onclick="navigate('login')" style="margin-bottom:var(--space-lg)">←</div>
+        <h2 style="margin-bottom:var(--space-md)">${t('reset_password')}</h2>
+        <div class="input-group">
+          <label class="input-label">${t('email')}</label>
+          <input class="input" type="email" id="reset-email" dir="ltr" autocomplete="email">
+        </div>
+        <button class="btn btn-primary btn-full" id="reset-btn" ${state.loading.auth ? 'disabled' : ''}>
+          ${state.loading.auth ? '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>' : t('send_reset_link')}
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderCustomerHome() {
+  const name = state.profile?.display_name?.split(' ')[0] || '';
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('hello')}, ${name} 👋</div>
+        <div class="header-action" onclick="navigate('profile')">
+          <div class="avatar avatar-sm">${getInitials(state.profile?.display_name)}</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="search-bar" onclick="navigate('explore')">
+          <span class="search-icon">🔍</span>
+          <input placeholder="${t('search_services')}" readonly style="cursor:pointer">
+        </div>
+        <div class="category-grid">
+          ${state.categories.map(cat => `
+            <div class="category-card" onclick="navigate('create-order',{categoryId:'${cat.id}',categoryName:'${getCategoryName(cat)}',categoryIcon:'${cat.icon}'})">
+              <div class="cat-icon">${cat.icon}</div>
+              <div class="cat-name">${getCategoryName(cat)}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="section-header">
+          <div class="section-title">${t('recent_orders')}</div>
+          <div class="section-link" onclick="state.activeTab='orders';navigate('orders')">${t('view_all')}</div>
+        </div>
+        ${state.orders.length === 0 ? `
+          <div class="empty-state" style="padding:var(--space-lg)">
+            <div class="empty-icon">📋</div>
+            <div class="empty-text">${t('no_orders_desc')}</div>
+          </div>
+        ` : `
+          <div class="h-scroll">
+            ${state.orders.slice(0, 5).map(o => `
+              <div class="card card-padded card-hover h-scroll-card" onclick="navigate('order-detail',{orderId:'${o.id}'})">
+                <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-sm)">
+                  <span style="font-weight:600">${o.title}</span>
+                  ${statusBadge(o.status)}
+                </div>
+                <div style="font-size:var(--font-sm);color:var(--c-text-secondary)">${timeAgo(o.created_at)}</div>
+                ${o.quoted_price ? `<div class="order-card-price" style="margin-top:var(--space-xs)">${formatCurrency(o.quoted_price, o.currency)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+      ${renderCustomerTabs()}
+    </div>`;
+}
+
+function renderCustomerTabs() {
+  const tabs = [
+    { id: 'home', icon: '🏠', label: t('home') },
+    { id: 'orders', icon: '📋', label: t('my_orders') },
+    { id: 'explore', icon: '🧭', label: t('explore') },
+    { id: 'profile', icon: '👤', label: t('profile') }
+  ];
+  return `<div class="tab-bar">${tabs.map(tab => `
+    <div class="tab-item ${state.activeTab === tab.id ? 'active' : ''}" onclick="state.activeTab='${tab.id}';navigate('${tab.id === 'home' ? 'home' : tab.id}')">
+      <span class="tab-icon">${tab.icon}</span>
+      <span class="tab-label">${tab.label}</span>
+    </div>`).join('')}</div>`;
+}
+
+function renderProviderTabs() {
+  const tabs = [
+    { id: 'provider-dashboard', icon: '📊', label: t('dashboard') },
+    { id: 'provider-orders', icon: '📋', label: t('my_orders') },
+    { id: 'provider-earnings', icon: '💰', label: t('earnings') },
+    { id: 'provider-profile', icon: '👤', label: t('profile') }
+  ];
+  return `<div class="tab-bar">${tabs.map(tab => `
+    <div class="tab-item ${state.route === tab.id ? 'active' : ''}" onclick="navigate('${tab.id}')">
+      <span class="tab-icon">${tab.icon}</span>
+      <span class="tab-label">${tab.label}</span>
+    </div>`).join('')}</div>`;
+}
+
+function renderOrders() {
+  const filter = state.routeParams.filter || 'all';
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('my_orders')}</div>
+        ${state.profile?.role === 'customer' ? `<div class="header-action" onclick="navigate('create-order')">➕</div>` : ''}
+      </div>
+      <div class="chip-row">
+        ${['all','active','completed','cancelled'].map(f => `
+          <div class="chip ${filter === f ? 'active' : ''}" onclick="state.routeParams.filter='${f}';loadOrders('${f}')">${t(f)}</div>
+        `).join('')}
+      </div>
+      <div class="content">
+        ${state.loading.orders ? `<div class="spinner-center"><div class="spinner"></div></div>` :
+          state.orders.length === 0 ? `
+            <div class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div class="empty-title">${t('no_orders')}</div>
+              <div class="empty-text">${t('no_orders_desc')}</div>
+            </div>` :
+          state.orders.map(o => `
+            <div class="order-card" onclick="navigate('order-detail',{orderId:'${o.id}'})">
+              <div class="order-card-top">
+                <div class="order-card-title">${o.title}</div>
+                ${statusBadge(o.status)}
+              </div>
+              <div class="order-card-meta">
+                <span>${o.categories?.icon || '🔧'} ${getCategoryName(o.categories)}</span>
+                <span>${timeAgo(o.created_at)}</span>
+                ${o.quoted_price ? `<span class="order-card-price">${formatCurrency(o.quoted_price, o.currency)}</span>` : ''}
+              </div>
+            </div>
+          `).join('')
+        }
+      </div>
+      ${state.profile?.role === 'customer' ? renderCustomerTabs() : renderProviderTabs()}
+    </div>`;
+}
+
+function renderCreateOrder() {
+  const catId = state.routeParams.categoryId || '';
+  const catName = state.routeParams.categoryName || '';
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('new_order')}</div>
+      </div>
+      <div class="content content-padded">
+        ${catId ? `<div class="badge badge-primary" style="margin-bottom:var(--space-md)">${state.routeParams.categoryIcon || '🔧'} ${catName}</div>` : `
+          <div class="input-group">
+            <label class="input-label">${t('service_categories')}</label>
+            <select class="input" id="order-category">
+              <option value="">${t('select_method')}</option>
+              ${state.categories.map(c => `<option value="${c.id}">${c.icon} ${getCategoryName(c)}</option>`).join('')}
+            </select>
+          </div>
+        `}
+        <div class="input-group">
+          <label class="input-label">${t('order_title')}</label>
+          <input class="input" id="order-title" placeholder="${t('order_title_ph')}" maxlength="200">
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('description')}</label>
+          <textarea class="input" id="order-desc" placeholder="${t('description_ph')}" maxlength="2000"></textarea>
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('location')}</label>
+          <div id="order-map" style="height:200px;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-sm);background:var(--c-bg)"></div>
+          <input class="input" id="order-address" placeholder="${t('location')}" readonly>
+          <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-sm)" onclick="useMyLocation()">📍 ${t('use_my_location')}</button>
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('budget')}</label>
+          <input class="input" id="order-budget" type="number" min="0" placeholder="0.00" dir="ltr">
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" id="submit-order-btn" ${state.loading.createOrder ? 'disabled' : ''}>
+          ${state.loading.createOrder ? '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>' : t('submit_order')}
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderOrderDetail() {
+  const o = state.currentOrder;
+  if (!o) return `<div class="screen active"><div class="spinner-center"><div class="spinner"></div></div></div>`;
+  const isCustomer = o.customer_id === state.user?.id;
+  const isProvider = o.provider_id === state.user?.id;
+  const isAdmin = state.profile?.role === 'admin' || state.profile?.role === 'superadmin';
+
+  const steps = ['pending','quoted','confirmed','payment_pending','in_progress','completed','closed'];
+  const currentStep = steps.indexOf(o.status);
+
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('order_details')}</div>
+        ${statusBadge(o.status)}
+      </div>
+      <div class="content content-padded">
+        <div class="card card-padded" style="margin-bottom:var(--space-md)">
+          <h3 style="margin-bottom:var(--space-sm)">${o.title}</h3>
+          <p style="color:var(--c-text-secondary);margin-bottom:var(--space-md)">${o.description}</p>
+          <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;font-size:var(--font-sm);color:var(--c-text-secondary)">
+            <span>📍 ${o.location_address || t('location')}</span>
+            <span>📅 ${formatDate(o.created_at)}</span>
+            ${o.budget ? `<span>💰 ${formatCurrency(o.budget, o.currency)}</span>` : ''}
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card" style="margin-bottom:var(--space-md)">
+          <div class="timeline">
+            ${steps.map((s, i) => `
+              <div class="timeline-step">
+                <div class="timeline-dot ${i < currentStep ? 'done' : i === currentStep ? 'current' : 'pending'}">
+                  ${i < currentStep ? '✓' : i + 1}
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-title">${t('status_' + s)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Quotes -->
+        ${(o.status === 'quoted' || o.status === 'pending') && isCustomer ? `
+          <h3 style="margin-bottom:var(--space-sm)">${t('quotes')} (${state.currentQuotes.length})</h3>
+          ${state.currentQuotes.length === 0 ? `
+            <div class="card card-padded" style="text-align:center;color:var(--c-text-secondary);margin-bottom:var(--space-md)">
+              ${t('waiting_quotes')}
+            </div>
+          ` : state.currentQuotes.filter(q => q.status === 'pending').map(q => `
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div class="avatar avatar-sm">${getInitials(q.profiles?.display_name)}</div>
+                <div>
+                  <div style="font-weight:600">${q.profiles?.display_name || t('provider')}</div>
+                  ${q.estimated_hours ? `<div style="font-size:var(--font-xs);color:var(--c-text-secondary)">~${q.estimated_hours}h</div>` : ''}
+                </div>
+              </div>
+              <div class="quote-card-price">${formatCurrency(q.price, q.currency)}</div>
+              ${q.notes ? `<p style="font-size:var(--font-sm);color:var(--c-text-secondary);margin-top:var(--space-sm)">${q.notes}</p>` : ''}
+              <div class="quote-card-actions">
+                <button class="btn btn-primary btn-sm" onclick="acceptQuote('${o.id}','${q.id}')">${t('accept')}</button>
+                <button class="btn btn-secondary btn-sm">${t('reject')}</button>
+              </div>
+            </div>
+          `).join('')}
+        ` : ''}
+
+        <!-- Actions -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm);margin-top:var(--space-md)">
+          ${o.status === 'confirmed' && isCustomer ? `
+            <button class="btn btn-primary btn-full" onclick="navigate('payment',{orderId:'${o.id}'})">${t('pay_now')}</button>
+          ` : ''}
+          ${o.status === 'in_progress' && isProvider ? `
+            <button class="btn btn-success btn-full" onclick="markComplete('${o.id}')">${t('mark_complete')}</button>
+          ` : ''}
+          ${o.status === 'completed' && isCustomer ? `
+            <button class="btn btn-primary btn-full" onclick="confirmCompletion('${o.id}')">${t('confirm_completion')}</button>
+          ` : ''}
+          ${o.status === 'closed' && isCustomer ? `
+            <button class="btn btn-secondary btn-full" onclick="navigate('review',{orderId:'${o.id}'})">${t('rate_service')}</button>
+          ` : ''}
+          ${['completed','closed'].includes(o.status) && isCustomer && state.flags.disputes_enabled ? `
+            <button class="btn btn-danger btn-full btn-sm" onclick="navigate('dispute',{orderId:'${o.id}'})">${t('open_dispute')}</button>
+          ` : ''}
+          ${['pending','quoted','confirmed'].includes(o.status) && isCustomer ? `
+            <button class="btn btn-secondary btn-full btn-sm" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))cancelOrder('${o.id}')">${t('cancel_order')}</button>
+          ` : ''}
+          ${o.provider_id && (isCustomer || isProvider) ? `
+            <button class="btn btn-secondary btn-full" onclick="openChat('${o.id}')">${t('open_chat')}</button>
+          ` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function openChat(orderId) {
+  const { data } = await supabase.from('conversations').select('*')
+    .eq('order_id', orderId).contains('participants', [state.user.id]).limit(1).single();
+  if (data) {
+    state.currentConversation = data.id;
+    await loadMessages(data.id);
+    navigate('chat', { conversationId: data.id });
+    setupRealtime();
+  }
+}
+
+function renderChat() {
+  const convId = state.routeParams.conversationId;
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="cleanupRealtime();state.currentConversation=null;goBack()">←</div>
+        <div class="header-title">${t('open_chat')}</div>
+      </div>
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          ${state.currentMessages.map(m => `
+            <div class="msg-bubble ${m.sender_id === state.user?.id ? 'msg-mine' : m.type === 'system' ? 'msg-system' : 'msg-theirs'}">
+              ${m.text || ''}
+              <div class="msg-time">${formatTime(m.created_at)}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="chat-input-bar">
+          <input class="chat-input" id="chat-input" placeholder="${t('type_message')}"
+                 onkeydown="if(event.key==='Enter'){handleSendMessage('${convId}');event.preventDefault()}">
+          <div class="chat-send" onclick="handleSendMessage('${convId}')">➤</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function handleSendMessage(convId) {
+  const input = $('#chat-input');
+  if (!input || !input.value.trim()) return;
+  const text = input.value;
+  input.value = '';
+  await sendMessage(convId, text);
+}
+
+function renderExplore() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('explore')}</div>
+      </div>
+      <div style="flex:1;position:relative">
+        <div id="explore-map" style="width:100%;height:100%"></div>
+        <div class="chip-row" style="position:absolute;top:var(--space-sm);left:0;right:0;z-index:500">
+          ${state.categories.map(c => `
+            <div class="chip">${c.icon} ${getCategoryName(c)}</div>
+          `).join('')}
+        </div>
+      </div>
+      ${renderCustomerTabs()}
+    </div>`;
+}
+
+function renderPayment() {
+  const o = state.currentOrder;
+  if (!o) return `<div class="screen active"><div class="spinner-center"><div class="spinner"></div></div></div>`;
+  const country = state.profile?.country || 'SA';
+  const countryConfig = CONFIG.SUPPORTED_COUNTRIES[country] || CONFIG.SUPPORTED_COUNTRIES.SA;
+  const vatRate = countryConfig.vat;
+  const subtotal = o.quoted_price || 0;
+  const vat = subtotal * vatRate;
+  const total = subtotal + vat;
+  const methods = [
+    { id: 'card', label: t('card'), icon: '💳', show: true },
+    { id: 'apple_pay', label: t('apple_pay'), icon: '🍎', show: true },
+    { id: 'mada', label: t('mada'), icon: '🏦', show: country === 'SA' },
+    { id: 'stc_pay', label: t('stc_pay'), icon: '📱', show: country === 'SA' },
+    { id: 'vipps', label: t('vipps'), icon: '📲', show: country === 'NO' && state.flags.norway_market_enabled },
+    { id: 'swish', label: t('swish'), icon: '📲', show: country === 'SE' && state.flags.sweden_market_enabled },
+    { id: 'cash', label: t('cash'), icon: '💵', show: state.flags.cash_payment_enabled }
+  ].filter(m => m.show);
+
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('payment')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="card card-padded" style="margin-bottom:var(--space-md)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-sm)">
+            <span>${t('subtotal')}</span><span>${formatCurrency(subtotal, o.currency)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-sm);color:var(--c-text-secondary)">
+            <span>${t('vat')} (${(vatRate * 100).toFixed(0)}%)</span><span>${formatCurrency(vat, o.currency)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-weight:700;font-size:var(--font-lg);border-top:1px solid var(--c-border);padding-top:var(--space-sm)">
+            <span>${t('total')}</span><span>${formatCurrency(total, o.currency)}</span>
+          </div>
+        </div>
+        <h3 style="margin-bottom:var(--space-md)">${t('select_method')}</h3>
+        ${methods.map(m => `
+          <div class="card card-padded card-hover" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:var(--space-md)"
+               onclick="showToast('${t('payment')} — ${m.label}','info')">
+            <span style="font-size:24px">${m.icon}</span>
+            <span style="flex:1;font-weight:600">${m.label}</span>
+            <span style="color:var(--c-text-muted)">→</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderReview() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('rate_service')}</div>
+      </div>
+      <div class="content content-padded" style="text-align:center">
+        <div class="avatar avatar-xl" style="margin:var(--space-xl) auto var(--space-md)">🔧</div>
+        <h3 style="margin-bottom:var(--space-lg)">${t('rate_provider')}</h3>
+        <div class="stars" id="review-stars" style="justify-content:center;margin-bottom:var(--space-lg)">
+          ${[1,2,3,4,5].map(n => `<div class="star" data-rating="${n}" onclick="setRating(${n})">★</div>`).join('')}
+        </div>
+        <div class="input-group" style="text-align:start">
+          <textarea class="input" id="review-comment" placeholder="${t('leave_comment')}"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" onclick="doSubmitReview()">${t('submit_review')}</button>
+      </div>
+    </div>`;
+}
+
+let selectedRating = 0;
+function setRating(n) {
+  selectedRating = n;
+  $$('#review-stars .star').forEach((s, i) => s.classList.toggle('filled', i < n));
+}
+
+function doSubmitReview() {
+  if (selectedRating === 0) { showToast('Please select a rating', 'error'); return; }
+  const comment = $('#review-comment')?.value;
+  handleSubmitReview(state.routeParams.orderId, selectedRating, comment);
+}
+
+function renderProfile() {
+  const p = state.profile;
+  if (!p) return '';
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('profile')}</div>
+      </div>
+      <div class="content content-padded">
+        <div style="text-align:center;margin-bottom:var(--space-xl)">
+          <div class="avatar avatar-xl" style="margin:0 auto var(--space-md)">${getInitials(p.display_name)}</div>
+          <h2>${p.display_name}</h2>
+          <p style="color:var(--c-text-secondary)">${p.email || ''}</p>
+          <span class="badge badge-primary" style="margin-top:var(--space-sm)">${t(p.role)}</span>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="navigate('edit-profile')">
+            <span class="si-icon">✏️</span><span class="si-text">${t('edit_profile')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" onclick="navigate('settings')">
+            <span class="si-icon">🔔</span><span class="si-text">${t('notifications')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item">
+            <span class="si-icon">🌐</span><span class="si-text">${t('language')}</span>
+            <select class="input" style="width:auto;padding:6px 10px;font-size:var(--font-sm)" onchange="switchLanguage(this.value)">
+              <option value="en" ${state.lang === 'en' ? 'selected' : ''}>English</option>
+              <option value="ar" ${state.lang === 'ar' ? 'selected' : ''}>العربية</option>
+              <option value="no" ${state.lang === 'no' ? 'selected' : ''}>Norsk</option>
+              <option value="sv" ${state.lang === 'sv' ? 'selected' : ''}>Svenska</option>
+            </select>
+          </div>
+          <div class="settings-item" onclick="navigate('settings')">
+            <span class="si-icon">🔒</span><span class="si-text">${t('security')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))handleLogout()">
+            <span class="si-icon">🚪</span><span class="si-text">${t('logout')}</span>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:var(--space-xl);color:var(--c-text-muted);font-size:var(--font-xs)">
+          ${t('app_version')} 1.0.0
+        </div>
+      </div>
+      ${state.profile?.role === 'customer' ? renderCustomerTabs() : renderProviderTabs()}
+    </div>`;
+}
+
+function renderEditProfile() {
+  const p = state.profile;
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('edit_profile')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="input-group">
+          <label class="input-label">${t('full_name')}</label>
+          <input class="input" id="edit-name" value="${p?.display_name || ''}">
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('phone')}</label>
+          <input class="input" id="edit-phone" type="tel" value="${p?.phone || ''}" dir="ltr">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveProfile()">${t('save')}</button>
+      </div>
+    </div>`;
+}
+
+async function saveProfile() {
+  const name = $('#edit-name')?.value;
+  const phone = $('#edit-phone')?.value;
+  const { error } = await supabase.from('profiles').update({
+    display_name: name, phone: phone
+  }).eq('id', state.user.id);
+  if (error) { showToast(error.message, 'error'); return; }
+  state.profile.display_name = name;
+  state.profile.phone = phone;
+  showToast(t('done'), 'success');
+  goBack();
+}
+
+/* ============================================
+   PROVIDER SCREENS
+   ============================================ */
+function renderProviderDashboard() {
+  const pp = state.providerProfile;
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('dashboard')}</div>
+        <div class="header-action" onclick="navigate('provider-profile')">
+          <div class="avatar avatar-sm">${getInitials(state.profile?.display_name)}</div>
+        </div>
+      </div>
+      <div class="content content-padded">
+        <div class="card card-padded" style="margin-bottom:var(--space-md);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-weight:600">${pp?.is_available ? t('available') : t('unavailable')}</span>
+          <div class="toggle ${pp?.is_available ? 'on' : ''}" onclick="toggleAvailability()"></div>
+        </div>
+        <div class="stats-grid" style="margin-bottom:var(--space-lg)">
+          <div class="stat-card">
+            <div class="stat-value">0</div>
+            <div class="stat-label">${t('pending_quotes')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">0</div>
+            <div class="stat-label">${t('active_jobs')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--c-success)">0</div>
+            <div class="stat-label">${t('earned_today')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${pp?.avg_rating?.toFixed(1) || '4.0'}</div>
+            <div class="stat-label">⭐ ${pp?.rating_count || 0} ${t('reviews_count')}</div>
+          </div>
+        </div>
+
+        ${state.profile?.kyc_status !== 'approved' ? `
+          <div class="kyc-banner ${state.profile?.kyc_status || 'not_submitted'}">
+            <span style="font-size:24px">${state.profile?.kyc_status === 'pending' ? '⏳' : state.profile?.kyc_status === 'rejected' ? '❌' : '📋'}</span>
+            <div style="flex:1">
+              <div style="font-weight:600">${t('kyc_title')}</div>
+              <div style="font-size:var(--font-sm)">${t('kyc_' + (state.profile?.kyc_status || 'not_submitted'))}</div>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="navigate('kyc')">→</button>
+          </div>
+        ` : ''}
+
+        <div class="section-header" style="padding-inline:0">
+          <div class="section-title">${t('incoming_requests')}</div>
+        </div>
+        <div id="incoming-requests">
+          <div class="empty-state">
+            <div class="empty-icon">📥</div>
+            <div class="empty-text">${t('no_orders_desc')}</div>
+          </div>
+        </div>
+      </div>
+      ${renderProviderTabs()}
+    </div>`;
+}
+
+async function toggleAvailability() {
+  if (!state.providerProfile) return;
+  const newVal = !state.providerProfile.is_available;
+  await supabase.from('provider_profiles').update({ is_available: newVal }).eq('id', state.user.id);
+  state.providerProfile.is_available = newVal;
+  render();
+}
+
+function renderProviderOrders() {
+  state.activeTab = 'provider-orders';
+  return renderOrders();
+}
+
+function renderQuoteSubmit() {
+  const o = state.currentOrder;
+  if (!o) return `<div class="screen active"><div class="spinner-center"><div class="spinner"></div></div></div>`;
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('submit_quote')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="card card-padded" style="margin-bottom:var(--space-md)">
+          <h3 style="margin-bottom:var(--space-sm)">${o.title}</h3>
+          <p style="color:var(--c-text-secondary);font-size:var(--font-sm)">${o.description}</p>
+          <div style="margin-top:var(--space-sm);font-size:var(--font-sm);color:var(--c-text-secondary)">
+            📍 ${o.location_address || ''} · ${o.budget ? `💰 ${formatCurrency(o.budget, o.currency)}` : ''}
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('your_price')} (${o.currency})</label>
+          <input class="input" type="number" id="quote-price" min="1" placeholder="0.00" dir="ltr">
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('estimated_hours')}</label>
+          <input class="input" type="number" id="quote-hours" min="0.5" step="0.5" placeholder="2" dir="ltr">
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('notes')}</label>
+          <textarea class="input" id="quote-notes" placeholder="${t('notes_ph')}" maxlength="500"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" id="send-quote-btn" ${state.loading.submitQuote ? 'disabled' : ''}
+                onclick="doSubmitQuote('${o.id}')">
+          ${state.loading.submitQuote ? '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>' : t('send_quote')}
+        </button>
+      </div>
+    </div>`;
+}
+
+function doSubmitQuote(orderId) {
+  const price = parseFloat($('#quote-price')?.value);
+  const hours = parseFloat($('#quote-hours')?.value) || null;
+  const notes = $('#quote-notes')?.value || null;
+  if (!price || price <= 0) { showToast('Enter a valid price', 'error'); return; }
+  submitQuote(orderId, price, hours, notes);
+}
+
+function renderEarnings() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('earnings')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="card card-padded" style="margin-bottom:var(--space-md);text-align:center">
+          <div style="font-size:var(--font-sm);color:var(--c-text-secondary)">${t('total_balance')}</div>
+          <div style="font-size:36px;font-weight:800;color:var(--c-success);margin:var(--space-sm) 0">${formatCurrency(0, 'SAR')}</div>
+          <div style="display:flex;justify-content:center;gap:var(--space-xl);margin-bottom:var(--space-md)">
+            <div><div style="font-weight:600">${formatCurrency(0, 'SAR')}</div><div style="font-size:var(--font-xs);color:var(--c-text-secondary)">${t('available_balance')}</div></div>
+            <div><div style="font-weight:600">${formatCurrency(0, 'SAR')}</div><div style="font-size:var(--font-xs);color:var(--c-text-secondary)">${t('pending_balance')}</div></div>
+          </div>
+          <button class="btn btn-primary btn-full">${t('request_payout')}</button>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">💸</div>
+          <div class="empty-text">${t('no_orders_desc')}</div>
+        </div>
+      </div>
+      ${renderProviderTabs()}
+    </div>`;
+}
+
+function renderKyc() {
+  const status = state.profile?.kyc_status || 'not_submitted';
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('kyc_title')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="kyc-banner ${status}">
+          <span style="font-size:24px">${status === 'approved' ? '✅' : status === 'pending' ? '⏳' : status === 'rejected' ? '❌' : '📋'}</span>
+          <div>${t('kyc_' + status)}</div>
+        </div>
+        ${status === 'rejected' && state.profile?.kyc_rejection_reason ? `
+          <div class="card card-padded" style="margin-bottom:var(--space-md);border-color:var(--c-danger)">
+            <div style="font-weight:600;color:var(--c-danger);margin-bottom:var(--space-xs)">Rejection Reason:</div>
+            <p style="color:var(--c-text-secondary)">${state.profile.kyc_rejection_reason}</p>
+          </div>
+        ` : ''}
+        ${status !== 'approved' ? `
+          <div class="card card-padded" style="margin-bottom:var(--space-md)">
+            <div class="input-group">
+              <label class="input-label">${t('national_id_front')}</label>
+              <label class="btn btn-secondary btn-full" style="cursor:pointer">
+                📷 ${t('upload')}
+                <input type="file" accept="image/*" style="display:none" id="kyc-front">
+              </label>
+            </div>
+            <div class="input-group">
+              <label class="input-label">${t('national_id_back')}</label>
+              <label class="btn btn-secondary btn-full" style="cursor:pointer">
+                📷 ${t('upload')}
+                <input type="file" accept="image/*" style="display:none" id="kyc-back">
+              </label>
+            </div>
+            <div class="input-group">
+              <label class="input-label">${t('trade_license')}</label>
+              <label class="btn btn-secondary btn-full" style="cursor:pointer">
+                📷 ${t('upload')}
+                <input type="file" accept="image/*" style="display:none" id="kyc-license">
+              </label>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full btn-lg" onclick="submitKyc()">${t('submit_for_review')}</button>
+        ` : ''}
+      </div>
+    </div>`;
+}
+
+async function submitKyc() {
+  await supabase.from('profiles').update({ kyc_status: 'pending' }).eq('id', state.user.id);
+  state.profile.kyc_status = 'pending';
+  showToast(t('done'), 'success');
+  render();
+}
+
+function renderProviderProfile() {
+  const p = state.profile;
+  const pp = state.providerProfile;
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('profile')}</div>
+      </div>
+      <div class="content content-padded">
+        <div style="text-align:center;margin-bottom:var(--space-lg)">
+          <div class="avatar avatar-xl" style="margin:0 auto var(--space-md)">${getInitials(p?.display_name)}</div>
+          <h2>${p?.display_name}</h2>
+          <div class="stars" style="justify-content:center;margin:var(--space-sm) 0">
+            ${[1,2,3,4,5].map(n => `<span class="star ${n <= Math.round(pp?.avg_rating || 4) ? 'filled' : ''}">★</span>`).join('')}
+          </div>
+          <span style="color:var(--c-text-secondary);font-size:var(--font-sm)">${pp?.avg_rating?.toFixed(1) || '4.0'} · ${pp?.rating_count || 0} ${t('reviews_count')}</span>
+          <div style="margin-top:var(--space-sm)">
+            <span class="badge badge-info">⏱ ${t('response_time')} ${Math.round(pp?.avg_response_minutes || 30)} ${t('minutes')}</span>
+          </div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="navigate('edit-profile')">
+            <span class="si-icon">✏️</span><span class="si-text">${t('edit_profile')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" onclick="navigate('kyc')">
+            <span class="si-icon">📋</span><span class="si-text">${t('kyc_title')}</span>
+            <span class="badge badge-${p?.kyc_status === 'approved' ? 'success' : p?.kyc_status === 'pending' ? 'info' : 'warning'}">${t('kyc_' + (p?.kyc_status || 'not_submitted'))}</span>
+          </div>
+          <div class="settings-item">
+            <span class="si-icon">🌐</span><span class="si-text">${t('language')}</span>
+            <select class="input" style="width:auto;padding:6px 10px;font-size:var(--font-sm)" onchange="switchLanguage(this.value)">
+              <option value="en" ${state.lang === 'en' ? 'selected' : ''}>English</option>
+              <option value="ar" ${state.lang === 'ar' ? 'selected' : ''}>العربية</option>
+              <option value="no" ${state.lang === 'no' ? 'selected' : ''}>Norsk</option>
+              <option value="sv" ${state.lang === 'sv' ? 'selected' : ''}>Svenska</option>
+            </select>
+          </div>
+          ${state.flags.subscriptions_enabled ? `
+            <div class="settings-item" onclick="navigate('subscription')">
+              <span class="si-icon">⭐</span><span class="si-text">${t('subscription')}</span><span class="si-chevron">›</span>
+            </div>
+          ` : ''}
+          <div class="settings-item" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))handleLogout()">
+            <span class="si-icon">🚪</span><span class="si-text">${t('logout')}</span>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:var(--space-xl);color:var(--c-text-muted);font-size:var(--font-xs)">
+          ${t('app_version')} 1.0.0
+        </div>
+      </div>
+      ${renderProviderTabs()}
+    </div>`;
+}
+
+/* ============================================
+   ADMIN SCREENS
+   ============================================ */
+function renderAdminDashboard() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-title">${t('admin_panel')}</div>
+        <div class="header-action" onclick="navigate('profile')">
+          <div class="avatar avatar-sm">${getInitials(state.profile?.display_name)}</div>
+        </div>
+      </div>
+      <div class="content content-padded">
+        <div class="stats-grid" style="margin-bottom:var(--space-lg)">
+          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('total_users')}</div></div>
+          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('active_orders')}</div></div>
+          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('pending_kyc')}</div></div>
+          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('open_disputes')}</div></div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="navigate('admin-users')">
+            <span class="si-icon">👥</span><span class="si-text">${t('users')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" onclick="navigate('admin-disputes')">
+            <span class="si-icon">⚖️</span><span class="si-text">${t('disputes')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" onclick="navigate('admin-reports')">
+            <span class="si-icon">📊</span><span class="si-text">${t('reports')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item">
+            <span class="si-icon">🌐</span><span class="si-text">${t('language')}</span>
+            <select class="input" style="width:auto;padding:6px 10px;font-size:var(--font-sm)" onchange="switchLanguage(this.value)">
+              <option value="en" ${state.lang === 'en' ? 'selected' : ''}>English</option>
+              <option value="ar" ${state.lang === 'ar' ? 'selected' : ''}>العربية</option>
+              <option value="no" ${state.lang === 'no' ? 'selected' : ''}>Norsk</option>
+              <option value="sv" ${state.lang === 'sv' ? 'selected' : ''}>Svenska</option>
+            </select>
+          </div>
+          <div class="settings-item" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))handleLogout()">
+            <span class="si-icon">🚪</span><span class="si-text">${t('logout')}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderAdminUsers() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-title">${t('users')}</div>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input id="admin-user-search" placeholder="${t('search_users')}" oninput="debouncedSearchUsers(this.value)">
+      </div>
+      <div class="content" id="admin-users-list">
+        <div class="spinner-center"><div class="spinner"></div></div>
+      </div>
+    </div>`;
+}
+
+const debouncedSearchUsers = debounce(async (query) => {
+  const users = await loadAdminUsers(query);
+  renderAdminUsersList(users);
+}, 300);
+
+function renderAdminUsersList(users) {
+  const el = $('#admin-users-list');
+  if (!el) return;
+  if (users.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">${t('no_orders_desc')}</div></div>`;
+    return;
+  }
+  el.innerHTML = users.map(u => {
+    const roleBadge = { customer: 'badge-neutral', provider: 'badge-primary', admin: 'badge-warning', superadmin: 'badge-danger' };
+    return `
+      <div class="order-card">
+        <div style="display:flex;align-items:center;gap:var(--space-md)">
+          <div class="avatar">${getInitials(u.display_name)}</div>
+          <div style="flex:1">
+            <div style="font-weight:600">${u.display_name}</div>
+            <div style="font-size:var(--font-sm);color:var(--c-text-secondary)">${u.email || u.phone || ''}</div>
+          </div>
+          <span class="badge ${roleBadge[u.role] || 'badge-neutral'}">${t(u.role)}</span>
+          ${u.is_banned ? `<span class="badge badge-danger">${t('banned')}</span>` : ''}
+        </div>
+        <div style="margin-top:var(--space-sm);display:flex;gap:var(--space-sm)">
+          ${u.role === 'provider' && u.kyc_status === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="event.stopPropagation();adminKycDecision('${u.id}',true);this.closest('.order-card').remove()">✓ KYC</button>
+          ` : ''}
+          ${!u.is_banned ?
+            `<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();adminBanUser('${u.id}',true,prompt('${t('ban_reason')}')).then(()=>debouncedSearchUsers(''))">${t('ban_user')}</button>` :
+            `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();adminBanUser('${u.id}',false).then(()=>debouncedSearchUsers(''))">${t('unban_user')}</button>`
+          }
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderAdminDisputes() {
+  const filter = state.routeParams.disputeFilter || 'all';
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-title">${t('disputes')}</div>
+      </div>
+      <div class="chip-row">
+        ${['all','open','investigating','resolved'].map(f => `
+          <div class="chip ${filter === f ? 'active' : ''}" onclick="state.routeParams.disputeFilter='${f}';render();loadAndRenderDisputes('${f}')">${t(f === 'all' ? 'all' : f)}</div>
+        `).join('')}
+      </div>
+      <div class="content" id="admin-disputes-list">
+        <div class="spinner-center"><div class="spinner"></div></div>
+      </div>
+    </div>`;
+}
+
+async function loadAndRenderDisputes(filter) {
+  const disputes = await loadAdminDisputes(filter);
+  const el = $('#admin-disputes-list');
+  if (!el) return;
+  if (disputes.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-text">${t('no_orders_desc')}</div></div>`;
+    return;
+  }
+  el.innerHTML = disputes.map(d => `
+    <div class="order-card">
+      <div class="order-card-top">
+        <div class="order-card-title">${d.orders?.title || d.order_id}</div>
+        <span class="badge ${d.status === 'open' ? 'badge-danger' : d.status === 'investigating' ? 'badge-warning' : 'badge-success'}">${t(d.status)}</span>
+      </div>
+      <p style="font-size:var(--font-sm);color:var(--c-text-secondary);margin-bottom:var(--space-sm)">${d.reason}</p>
+      <div style="font-size:var(--font-xs);color:var(--c-text-muted)">${formatDate(d.created_at)}</div>
+      ${d.status !== 'resolved' ? `
+        <div style="margin-top:var(--space-sm);display:flex;gap:var(--space-sm);flex-wrap:wrap">
+          <button class="btn btn-sm btn-primary" onclick="adminResolveDispute('${d.id}','customer_favor').then(()=>loadAndRenderDisputes('${filter}'))">${t('customer_favor')}</button>
+          <button class="btn btn-sm btn-secondary" onclick="adminResolveDispute('${d.id}','provider_favor').then(()=>loadAndRenderDisputes('${filter}'))">${t('provider_favor')}</button>
+          <button class="btn btn-sm btn-secondary" onclick="adminResolveDispute('${d.id}','settlement').then(()=>loadAndRenderDisputes('${filter}'))">${t('settlement')}</button>
+        </div>
+      ` : d.resolution ? `<div style="margin-top:var(--space-sm)"><span class="badge badge-info">${t(d.resolution)}</span></div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderAdminReports() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-title">${t('reports')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="chip-row" style="padding:0;margin-bottom:var(--space-md)">
+          <div class="chip active">${t('this_month')}</div>
+          <div class="chip">${t('last_month')}</div>
+          <div class="chip">${t('three_months')}</div>
+          <div class="chip">${t('this_year')}</div>
+        </div>
+        <div class="stats-grid" style="margin-bottom:var(--space-lg)">
+          <div class="stat-card"><div class="stat-value">${formatCurrency(0, 'SAR')}</div><div class="stat-label">${t('revenue')}</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(0, 'SAR')}</div><div class="stat-label">${t('commission')}</div></div>
+          <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">${t('total_orders_label')}</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(0, 'SAR')}</div><div class="stat-label">${t('avg_order_value')}</div></div>
+        </div>
+        <div class="card card-padded">
+          <h3 style="margin-bottom:var(--space-md)">${t('revenue')}</h3>
+          <div class="bar-chart">
+            ${['Sat','Sun','Mon','Tue','Wed','Thu','Fri'].map((d, i) => {
+              const h = Math.random() * 80 + 20;
+              return `<div class="bar-col"><div class="bar-fill" style="height:${h}%"></div><div class="bar-label">${d}</div></div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ============================================
+   SETTINGS SCREEN
+   ============================================ */
+function renderSettings() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('notifications')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="settings-list">
+          <div class="settings-item">
+            <span class="si-icon">📬</span><span class="si-text">${t('notifications')}</span>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-item">
+            <span class="si-icon">💬</span><span class="si-text">${t('open_chat')}</span>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderDispute() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('open_dispute')}</div>
+      </div>
+      <div class="content content-padded">
+        <div class="input-group">
+          <label class="input-label">${t('description')}</label>
+          <textarea class="input" id="dispute-reason" placeholder="${t('description_ph')}"></textarea>
+        </div>
+        <button class="btn btn-danger btn-full btn-lg" onclick="doOpenDispute()">${t('open_dispute')}</button>
+      </div>
+    </div>`;
+}
+
+function doOpenDispute() {
+  const reason = $('#dispute-reason')?.value;
+  if (!reason || reason.length < 10) { showToast('Please describe the issue', 'error'); return; }
+  handleOpenDispute(state.routeParams.orderId, reason);
+}
+
+/* ============================================
+   LANGUAGE
+   ============================================ */
+function switchLanguage(lang) {
+  state.lang = lang;
+  const dir = I18N[lang]?.dir || 'ltr';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = dir;
+  localStorage.setItem('workfix_lang', lang);
+  render();
+}
+
+function detectLanguage() {
+  const saved = localStorage.getItem('workfix_lang');
+  if (saved && I18N[saved]) return saved;
+  const browserLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+  if (browserLang.startsWith('ar')) return 'ar';
+  if (browserLang.startsWith('nb') || browserLang.startsWith('nn') || browserLang.startsWith('no')) return 'no';
+  if (browserLang.startsWith('sv')) return 'sv';
+  return 'en';
+}
+
+/* ============================================
+   MAP HELPERS
+   ============================================ */
+let orderMap = null;
+let orderMarker = null;
+let exploreMap = null;
+
+function initOrderMap() {
+  setTimeout(() => {
+    const el = document.getElementById('order-map');
+    if (!el || orderMap) return;
+    orderMap = L.map('order-map').setView([24.7136, 46.6753], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OSM'
+    }).addTo(orderMap);
+    orderMap.on('click', e => {
+      if (orderMarker) orderMap.removeLayer(orderMarker);
+      orderMarker = L.marker(e.latlng).addTo(orderMap);
+      const addrInput = $('#order-address');
+      if (addrInput) addrInput.value = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+      state.routeParams.lat = e.latlng.lat;
+      state.routeParams.lng = e.latlng.lng;
+    });
+  }, 200);
+}
+
+function initExploreMap() {
+  setTimeout(() => {
+    const el = document.getElementById('explore-map');
+    if (!el || exploreMap) return;
+    exploreMap = L.map('explore-map').setView([24.7136, 46.6753], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OSM'
+    }).addTo(exploreMap);
+  }, 200);
+}
+
+function useMyLocation() {
+  if (!navigator.geolocation) { showToast('Geolocation not supported', 'error'); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    state.routeParams.lat = lat;
+    state.routeParams.lng = lng;
+    if (orderMap) {
+      orderMap.setView([lat, lng], 15);
+      if (orderMarker) orderMap.removeLayer(orderMarker);
+      orderMarker = L.marker([lat, lng]).addTo(orderMap);
+    }
+    const addrInput = $('#order-address');
+    if (addrInput) addrInput.value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  }, () => showToast('Location access denied', 'error'));
+}
+
+/* ============================================
+   MAIN RENDER
+   ============================================ */
+function render() {
+  const app = $('#app');
+  let html = '';
+
+  switch (state.route) {
+    case 'login': html = renderLogin(); break;
+    case 'register': html = renderRegister(); break;
+    case 'forgot-password': html = renderForgotPassword(); break;
+    case 'home': html = renderCustomerHome(); break;
+    case 'orders': html = renderOrders(); break;
+    case 'create-order': html = renderCreateOrder(); break;
+    case 'order-detail': html = renderOrderDetail(); break;
+    case 'chat': html = renderChat(); break;
+    case 'explore': html = renderExplore(); break;
+    case 'payment': html = renderPayment(); break;
+    case 'review': html = renderReview(); break;
+    case 'profile': html = renderProfile(); break;
+    case 'edit-profile': html = renderEditProfile(); break;
+    case 'settings': html = renderSettings(); break;
+    case 'dispute': html = renderDispute(); break;
+    case 'provider-dashboard': html = renderProviderDashboard(); break;
+    case 'provider-orders': html = renderProviderOrders(); break;
+    case 'provider-earnings': html = renderEarnings(); break;
+    case 'provider-profile': html = renderProviderProfile(); break;
+    case 'quote-submit': html = renderQuoteSubmit(); break;
+    case 'kyc': html = renderKyc(); break;
+    case 'admin-dashboard': html = renderAdminDashboard(); break;
+    case 'admin-users': html = renderAdminUsers(); break;
+    case 'admin-disputes': html = renderAdminDisputes(); break;
+    case 'admin-reports': html = renderAdminReports(); break;
+    default: html = renderLogin();
+  }
+
+  app.innerHTML = html;
+
+  // Post-render hooks
+  if (state.route === 'create-order') initOrderMap();
+  if (state.route === 'explore') initExploreMap();
+  if (state.route === 'chat') {
+    const msgList = $('#chat-messages');
+    if (msgList) msgList.scrollTop = msgList.scrollHeight;
+  }
+  if (state.route === 'admin-users') debouncedSearchUsers('');
+  if (state.route === 'admin-disputes') loadAndRenderDisputes(state.routeParams.disputeFilter || 'all');
+
+  // Bind events
+  bindEvents();
+}
+
+function bindEvents() {
+  const loginBtn = $('#login-btn');
+  if (loginBtn) {
+    loginBtn.onclick = () => {
+      const email = $('#login-email')?.value;
+      const password = $('#login-password')?.value;
+      if (email && password) handleLogin(email, password);
+    };
+  }
+
+  const registerBtn = $('#register-btn');
+  if (registerBtn) {
+    registerBtn.onclick = () => {
+      const name = $('#reg-name')?.value;
+      const email = $('#reg-email')?.value;
+      const password = $('#reg-password')?.value;
+      const confirm = $('#reg-confirm')?.value;
+      const terms = $('#reg-terms')?.checked;
+      const role = state.routeParams.selectedRole || 'customer';
+      if (!name || name.length < 2) { showToast('Name must be at least 2 characters', 'error'); return; }
+      if (!email) { showToast('Email is required', 'error'); return; }
+      if (!password || password.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
+      if (password !== confirm) { showToast('Passwords do not match', 'error'); return; }
+      if (!terms) { showToast('Please agree to the terms', 'error'); return; }
+      handleRegister(name, email, password, role);
+    };
+  }
+
+  const registerLink = $('#register-link');
+  if (registerLink) registerLink.onclick = () => navigate('register');
+
+  const forgotLink = $('#forgot-link');
+  if (forgotLink) forgotLink.onclick = () => navigate('forgot-password');
+
+  const toggleLoginMethod = $('#toggle-login-method');
+  if (toggleLoginMethod) toggleLoginMethod.onclick = () => navigate('login', { phoneLogin: !state.routeParams.phoneLogin });
+
+  const resetBtn = $('#reset-btn');
+  if (resetBtn) resetBtn.onclick = () => {
+    const email = $('#reset-email')?.value;
+    if (email) handleResetPassword(email);
+  };
+
+  const submitOrderBtn = $('#submit-order-btn');
+  if (submitOrderBtn) {
+    submitOrderBtn.onclick = () => {
+      const title = $('#order-title')?.value;
+      const desc = $('#order-desc')?.value;
+      const budget = parseFloat($('#order-budget')?.value) || null;
+      const catId = state.routeParams.categoryId || $('#order-category')?.value;
+      if (!catId) { showToast('Select a category', 'error'); return; }
+      if (!title || title.length < 3) { showToast('Title must be at least 3 characters', 'error'); return; }
+      if (!desc || desc.length < 10) { showToast('Description must be at least 10 characters', 'error'); return; }
+      createOrder({
+        categoryId: catId, title, description: desc,
+        lat: state.routeParams.lat || 24.7136,
+        lng: state.routeParams.lng || 46.6753,
+        address: $('#order-address')?.value || 'Location',
+        geohash: 'u4pru', budget,
+        currency: CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR'
+      });
+    };
+  }
+
+  // Enter key on login
+  const loginPassword = $('#login-password');
+  if (loginPassword) loginPassword.onkeydown = e => { if (e.key === 'Enter') loginBtn?.click(); };
+  const loginEmail = $('#login-email');
+  if (loginEmail) loginEmail.onkeydown = e => { if (e.key === 'Enter') $('#login-password')?.focus(); };
+}
+
+/* ============================================
+   PWA INSTALL
+   ============================================ */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r => { deferredPrompt = null; });
+  }
+}
+
+/* ============================================
+   INITIALIZATION
+   ============================================ */
+async function init() {
+  // Language detection
+  state.lang = detectLanguage();
+  const dir = I18N[state.lang]?.dir || 'ltr';
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = dir;
+
+  // Render login first
+  render();
+
+  // Check existing session
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    await loadUserProfile();
+    await Promise.all([loadCategories(), loadFlags(), loadOrders()]);
+    navigate(getDefaultRoute());
+    setupRealtime();
+  }
+
+  // Listen for auth changes
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await loadUserProfile();
+      await Promise.all([loadCategories(), loadFlags(), loadOrders()]);
+      navigate(getDefaultRoute());
+      setupRealtime();
+    } else if (event === 'SIGNED_OUT') {
+      state.user = null;
+      state.profile = null;
+      cleanupRealtime();
+      navigate('login');
+    }
+  });
+
+  // Handle browser back/forward
+  window.addEventListener('popstate', () => {
+    const hash = window.location.hash.slice(1) || 'login';
+    if (hash !== state.route) {
+      state.route = hash;
+      render();
+    }
+  });
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
+// Route-based data loading
+const originalNavigate = navigate;
+navigate = async function(route, params = {}) {
+  originalNavigate(route, params);
+
+  // Pre-fetch data for routes that need it
+  if (route === 'home' && state.categories.length === 0) {
+    await loadCategories();
+    await loadOrders();
+    render();
+  }
+  if (route === 'orders' || route === 'provider-orders') {
+    await loadOrders(params.filter || 'all');
+  }
+  if (route === 'order-detail' && params.orderId) {
+    await loadOrder(params.orderId);
+    render();
+  }
+  if (route === 'payment' && params.orderId && !state.currentOrder) {
+    await loadOrder(params.orderId);
+    render();
+  }
+  if (route === 'quote-submit' && params.orderId) {
+    await loadOrder(params.orderId);
+    render();
+  }
+};
+
+// Start the app
+init();
+</script>
+</body>
+</html>
