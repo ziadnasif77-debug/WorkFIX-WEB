@@ -432,6 +432,84 @@ html[dir="rtl"] .toggle.on::after{transform:translateX(-20px)}
 .kyc-banner.approved{background:var(--c-success-light);color:var(--c-success)}
 .kyc-banner.rejected{background:var(--c-danger-light);color:var(--c-danger)}
 
+/* OTP Input */
+.otp-row{display:flex;gap:var(--space-sm);justify-content:center;margin:var(--space-lg) 0}
+.otp-cell{
+  width:48px;height:56px;text-align:center;font-size:var(--font-xl);font-weight:700;
+  border:2px solid var(--c-border);border-radius:var(--radius-md);background:var(--c-surface);
+}
+.otp-cell:focus{border-color:var(--c-primary);box-shadow:0 0 0 3px var(--c-primary-light)}
+.otp-cell.error{border-color:var(--c-danger);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* Subscription cards */
+.plan-card{
+  padding:var(--space-lg);background:var(--c-surface);border:2px solid var(--c-border);
+  border-radius:var(--radius-lg);text-align:center;cursor:pointer;transition:all .2s;
+}
+.plan-card.selected{border-color:var(--c-primary);background:var(--c-primary-light)}
+.plan-card.popular{position:relative}
+.plan-card.popular::before{
+  content:'⭐';position:absolute;top:-12px;inset-inline-end:12px;
+  background:var(--c-warning);color:#fff;padding:2px 10px;border-radius:var(--radius-full);font-size:var(--font-xs);
+}
+.plan-price{font-size:var(--font-xxl);font-weight:800;color:var(--c-primary);margin:var(--space-sm) 0}
+.plan-period{font-size:var(--font-sm);color:var(--c-text-secondary)}
+.plan-features{list-style:none;padding:0;margin:var(--space-md) 0;text-align:start}
+.plan-features li{padding:var(--space-xs) 0;font-size:var(--font-sm);color:var(--c-text-secondary)}
+.plan-features li::before{content:'✓ ';color:var(--c-success);font-weight:700}
+
+/* Provider card (explore) */
+.provider-card{
+  display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);
+  border-bottom:1px solid var(--c-border);cursor:pointer;transition:background .15s;
+}
+.provider-card:hover{background:var(--c-surface-hover)}
+.provider-info{flex:1}
+.provider-name{font-weight:600}
+.provider-meta{display:flex;gap:var(--space-sm);font-size:var(--font-sm);color:var(--c-text-secondary);flex-wrap:wrap;margin-top:2px}
+
+/* Notification badge */
+.notif-badge{
+  position:absolute;top:-2px;inset-inline-end:-2px;
+  min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  background:var(--c-danger);color:#fff;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Photo preview grid */
+.photo-grid{display:flex;gap:var(--space-sm);flex-wrap:wrap;margin:var(--space-sm) 0}
+.photo-thumb{
+  width:72px;height:72px;border-radius:var(--radius-md);overflow:hidden;
+  position:relative;border:1px solid var(--c-border);
+}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb .remove-photo{
+  position:absolute;top:2px;inset-inline-end:2px;width:20px;height:20px;
+  border-radius:50%;background:var(--c-danger);color:#fff;font-size:12px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+
+/* Audit log row */
+.audit-row{
+  padding:var(--space-sm) var(--space-md);border-bottom:1px solid var(--c-border);
+  font-size:var(--font-sm);
+}
+.audit-action{font-weight:600;color:var(--c-primary)}
+.audit-actor{color:var(--c-text-secondary)}
+.audit-time{color:var(--c-text-muted);font-size:var(--font-xs)}
+
+/* Route line on map */
+.route-info{
+  position:absolute;bottom:var(--space-md);left:var(--space-md);right:var(--space-md);
+  z-index:500;background:var(--c-surface);border-radius:var(--radius-lg);
+  padding:var(--space-md);box-shadow:var(--shadow-lg);
+}
+.route-stats{display:flex;gap:var(--space-lg);justify-content:center}
+.route-stat{text-align:center}
+.route-stat-value{font-size:var(--font-lg);font-weight:700}
+.route-stat-label{font-size:var(--font-xs);color:var(--c-text-secondary)}
+
 /* Responsive */
 @media(min-width:768px){
   #app{max-width:480px;margin:0 auto;border-inline:1px solid var(--c-border);height:100vh}
@@ -701,7 +779,74 @@ const I18N = {
     ago: 'ago',
     today: 'Today',
     yesterday: 'Yesterday',
-    install_app: 'Install App'
+    install_app: 'Install App',
+    // Phone verify
+    otp_title: 'Verify Phone',
+    otp_subtitle: 'Enter the 6-digit code sent to',
+    otp_resend: 'Resend code',
+    otp_resend_in: 'Resend in',
+    otp_error: 'Invalid code, please try again',
+    // Subscription
+    subscription_title: 'Subscription Plans',
+    free_tier: 'Free',
+    pro_tier: 'Pro',
+    business_tier: 'Business',
+    monthly: 'Monthly',
+    yearly: 'Yearly',
+    current_plan: 'Current Plan',
+    subscribe: 'Subscribe',
+    plan_feature_visibility: 'Boosted visibility',
+    plan_feature_priority: 'Priority dispatch',
+    plan_feature_analytics: 'Analytics dashboard',
+    plan_feature_agency: 'Agency model',
+    plan_feature_basic: 'Basic listing',
+    plan_feature_standard: 'Standard dispatch',
+    save_percent: 'Save',
+    // Boost
+    boost_title: 'Boost Visibility',
+    boost_desc: 'Appear higher in search results',
+    boost_active: 'Boost Active',
+    boost_expires: 'Expires',
+    boost_multiplier: '1.2x visibility multiplier',
+    days: 'days',
+    buy_boost: 'Buy Boost',
+    // Provider detail
+    provider_detail: 'Provider Profile',
+    completed_jobs: 'Completed Jobs',
+    request_service: 'Request Service',
+    member_since: 'Member since',
+    // Audit logs
+    audit_logs: 'Audit Logs',
+    no_logs: 'No audit logs found',
+    // Notifications
+    notif_enable: 'Enable push notifications',
+    notif_orders: 'Order updates',
+    notif_chat: 'Chat messages',
+    notif_promo: 'Promotions',
+    // Upload
+    uploading: 'Uploading...',
+    upload_success: 'Upload successful',
+    upload_error: 'Upload failed',
+    // Dispatch
+    dispatch_score: 'Dispatch Score',
+    // OSRM
+    walking: 'Walking',
+    driving: 'Driving',
+    distance: 'Distance',
+    duration: 'Duration',
+    km: 'km',
+    min: 'min',
+    // Payment flow
+    commission_fee: 'Platform fee',
+    processing: 'Processing payment...',
+    payment_success: 'Payment successful',
+    payment_failed: 'Payment failed',
+    escrow_held: 'Funds held in escrow',
+    // Data export & deletion
+    export_requested: 'Data export requested. You will receive a download link.',
+    delete_warning: 'This action cannot be undone. Your data will be deleted after 30 days.',
+    delete_confirm: 'Type DELETE to confirm',
+    account_deletion: 'Account Deletion'
   },
   ar: {
     dir: 'rtl',
@@ -896,7 +1041,63 @@ const I18N = {
     ago: 'مضت',
     today: 'اليوم',
     yesterday: 'أمس',
-    install_app: 'تثبيت التطبيق'
+    install_app: 'تثبيت التطبيق',
+    otp_title: 'تحقق من الهاتف',
+    otp_subtitle: 'أدخل الرمز المكون من 6 أرقام المرسل إلى',
+    otp_resend: 'إعادة إرسال الرمز',
+    otp_resend_in: 'إعادة الإرسال خلال',
+    otp_error: 'رمز غير صالح، حاول مجدداً',
+    subscription_title: 'خطط الاشتراك',
+    free_tier: 'مجاني',
+    pro_tier: 'برو',
+    business_tier: 'أعمال',
+    monthly: 'شهري',
+    yearly: 'سنوي',
+    current_plan: 'الخطة الحالية',
+    subscribe: 'اشترك',
+    plan_feature_visibility: 'ظهور معزز',
+    plan_feature_priority: 'أولوية في التوزيع',
+    plan_feature_analytics: 'لوحة تحليلات',
+    plan_feature_agency: 'نموذج وكالة',
+    plan_feature_basic: 'قائمة أساسية',
+    plan_feature_standard: 'توزيع قياسي',
+    save_percent: 'وفّر',
+    boost_title: 'تعزيز الظهور',
+    boost_desc: 'اظهر أعلى في نتائج البحث',
+    boost_active: 'التعزيز نشط',
+    boost_expires: 'ينتهي',
+    boost_multiplier: 'مضاعف ظهور 1.2×',
+    days: 'أيام',
+    buy_boost: 'شراء تعزيز',
+    provider_detail: 'ملف المزوّد',
+    completed_jobs: 'مهام مكتملة',
+    request_service: 'طلب خدمة',
+    member_since: 'عضو منذ',
+    audit_logs: 'سجل العمليات',
+    no_logs: 'لا توجد سجلات',
+    notif_enable: 'تفعيل إشعارات الدفع',
+    notif_orders: 'تحديثات الطلبات',
+    notif_chat: 'رسائل المحادثة',
+    notif_promo: 'العروض الترويجية',
+    uploading: 'جاري الرفع...',
+    upload_success: 'تم الرفع بنجاح',
+    upload_error: 'فشل الرفع',
+    dispatch_score: 'نقاط التوزيع',
+    walking: 'مشي',
+    driving: 'سيارة',
+    distance: 'المسافة',
+    duration: 'المدة',
+    km: 'كم',
+    min: 'دقيقة',
+    commission_fee: 'رسوم المنصة',
+    processing: 'جاري معالجة الدفع...',
+    payment_success: 'تم الدفع بنجاح',
+    payment_failed: 'فشل الدفع',
+    escrow_held: 'الأموال محتجزة في الضمان',
+    export_requested: 'تم طلب تصدير البيانات. ستتلقى رابط تحميل.',
+    delete_warning: 'لا يمكن التراجع عن هذا الإجراء. سيتم حذف بياناتك بعد 30 يوماً.',
+    delete_confirm: 'اكتب DELETE للتأكيد',
+    account_deletion: 'حذف الحساب'
   },
   no: {
     dir: 'ltr',
@@ -1091,7 +1292,63 @@ const I18N = {
     ago: 'siden',
     today: 'I dag',
     yesterday: 'I går',
-    install_app: 'Installer app'
+    install_app: 'Installer app',
+    otp_title: 'Bekreft telefon',
+    otp_subtitle: 'Skriv inn 6-sifret kode sendt til',
+    otp_resend: 'Send kode på nytt',
+    otp_resend_in: 'Send på nytt om',
+    otp_error: 'Ugyldig kode, prøv igjen',
+    subscription_title: 'Abonnementsplaner',
+    free_tier: 'Gratis',
+    pro_tier: 'Pro',
+    business_tier: 'Business',
+    monthly: 'Månedlig',
+    yearly: 'Årlig',
+    current_plan: 'Nåværende plan',
+    subscribe: 'Abonner',
+    plan_feature_visibility: 'Økt synlighet',
+    plan_feature_priority: 'Prioritert utsendelse',
+    plan_feature_analytics: 'Analysepanel',
+    plan_feature_agency: 'Byråmodell',
+    plan_feature_basic: 'Grunnleggende oppføring',
+    plan_feature_standard: 'Standard utsendelse',
+    save_percent: 'Spar',
+    boost_title: 'Boost synlighet',
+    boost_desc: 'Vis høyere i søkeresultater',
+    boost_active: 'Boost aktiv',
+    boost_expires: 'Utløper',
+    boost_multiplier: '1.2x synlighetsmultiplikator',
+    days: 'dager',
+    buy_boost: 'Kjøp boost',
+    provider_detail: 'Leverandørprofil',
+    completed_jobs: 'Fullførte jobber',
+    request_service: 'Be om tjeneste',
+    member_since: 'Medlem siden',
+    audit_logs: 'Revisjonslogger',
+    no_logs: 'Ingen logger funnet',
+    notif_enable: 'Aktiver push-varsler',
+    notif_orders: 'Bestillingsoppdateringer',
+    notif_chat: 'Chatmeldinger',
+    notif_promo: 'Kampanjer',
+    uploading: 'Laster opp...',
+    upload_success: 'Opplasting vellykket',
+    upload_error: 'Opplasting mislyktes',
+    dispatch_score: 'Utsendelsespoeng',
+    walking: 'Gange',
+    driving: 'Kjøring',
+    distance: 'Avstand',
+    duration: 'Varighet',
+    km: 'km',
+    min: 'min',
+    commission_fee: 'Plattformgebyr',
+    processing: 'Behandler betaling...',
+    payment_success: 'Betaling vellykket',
+    payment_failed: 'Betaling mislyktes',
+    escrow_held: 'Midler holdt i escrow',
+    export_requested: 'Dataeksport forespurt. Du vil motta en nedlastingslenke.',
+    delete_warning: 'Denne handlingen kan ikke angres. Dataene dine slettes etter 30 dager.',
+    delete_confirm: 'Skriv DELETE for å bekrefte',
+    account_deletion: 'Slett konto'
   },
   sv: {
     dir: 'ltr',
@@ -1286,7 +1543,63 @@ const I18N = {
     ago: 'sedan',
     today: 'Idag',
     yesterday: 'Igår',
-    install_app: 'Installera app'
+    install_app: 'Installera app',
+    otp_title: 'Verifiera telefon',
+    otp_subtitle: 'Ange den 6-siffriga koden som skickats till',
+    otp_resend: 'Skicka kod igen',
+    otp_resend_in: 'Skicka igen om',
+    otp_error: 'Ogiltig kod, försök igen',
+    subscription_title: 'Prenumerationsplaner',
+    free_tier: 'Gratis',
+    pro_tier: 'Pro',
+    business_tier: 'Business',
+    monthly: 'Månadsvis',
+    yearly: 'Årsvis',
+    current_plan: 'Nuvarande plan',
+    subscribe: 'Prenumerera',
+    plan_feature_visibility: 'Ökad synlighet',
+    plan_feature_priority: 'Prioriterad dispatch',
+    plan_feature_analytics: 'Analyspanel',
+    plan_feature_agency: 'Byråmodell',
+    plan_feature_basic: 'Grundläggande listning',
+    plan_feature_standard: 'Standard dispatch',
+    save_percent: 'Spara',
+    boost_title: 'Boosta synlighet',
+    boost_desc: 'Visa högre i sökresultat',
+    boost_active: 'Boost aktiv',
+    boost_expires: 'Löper ut',
+    boost_multiplier: '1.2x synlighetsmultiplikator',
+    days: 'dagar',
+    buy_boost: 'Köp boost',
+    provider_detail: 'Leverantörsprofil',
+    completed_jobs: 'Slutförda jobb',
+    request_service: 'Begär tjänst',
+    member_since: 'Medlem sedan',
+    audit_logs: 'Revisionsloggar',
+    no_logs: 'Inga loggar hittade',
+    notif_enable: 'Aktivera push-aviseringar',
+    notif_orders: 'Beställningsuppdateringar',
+    notif_chat: 'Chattmeddelanden',
+    notif_promo: 'Kampanjer',
+    uploading: 'Laddar upp...',
+    upload_success: 'Uppladdning lyckades',
+    upload_error: 'Uppladdning misslyckades',
+    dispatch_score: 'Dispatch-poäng',
+    walking: 'Gång',
+    driving: 'Körning',
+    distance: 'Avstånd',
+    duration: 'Varaktighet',
+    km: 'km',
+    min: 'min',
+    commission_fee: 'Plattformsavgift',
+    processing: 'Bearbetar betalning...',
+    payment_success: 'Betalning lyckad',
+    payment_failed: 'Betalning misslyckades',
+    escrow_held: 'Medel hålls i escrow',
+    export_requested: 'Dataexport begärd. Du kommer att få en nedladdningslänk.',
+    delete_warning: 'Denna åtgärd kan inte ångras. Dina data raderas efter 30 dagar.',
+    delete_confirm: 'Skriv DELETE för att bekräfta',
+    account_deletion: 'Radera konto'
   }
 };
 
@@ -1526,6 +1839,12 @@ async function loadOrder(id) {
 async function createOrder(formData) {
   setLoading('createOrder', true);
   render();
+
+  let photoUrls = [];
+  if (pendingOrderPhotos.length > 0) {
+    photoUrls = await uploadOrderPhotos(pendingOrderPhotos);
+  }
+
   const { data, error } = await supabase.rpc('create_order', {
     p_category_id: formData.categoryId,
     p_title: formData.title,
@@ -1539,6 +1858,12 @@ async function createOrder(formData) {
   });
   setLoading('createOrder', false);
   if (error) { showToast(error.message, 'error'); render(); return; }
+
+  if (data && photoUrls.length > 0) {
+    await supabase.from('orders').update({ photo_urls: photoUrls }).eq('id', data);
+  }
+
+  pendingOrderPhotos = [];
   showToast(t('done'), 'success');
   navigate('orders');
 }
@@ -1690,6 +2015,378 @@ async function loadEarnings() {
   const history = data || [];
   const available = history.reduce((s, p) => s + (p.net_amount || 0), 0);
   return { available, pending: 0, history };
+}
+
+/* ============================================
+   DISPATCH SCORING ENGINE
+   ============================================ */
+function calculateDispatchScore(provider, orderLat, orderLng) {
+  const ratingScore = provider.avg_rating || CONFIG.BAYESIAN_M;
+  const responseScore = Math.max(0, 1 - (provider.avg_response_minutes || 30) / 120);
+  const acceptanceScore = provider.acceptance_rate || 0.8;
+  const completedScore = Math.min(1, (provider.completed_orders || 0) / 50);
+  const distanceKm = haversine(orderLat, orderLng, provider.location_lat, provider.location_lng);
+  const distanceScore = Math.max(0, 1 - distanceKm / 50);
+
+  let boostMultiplier = 1.0;
+  if (provider.has_active_boost) boostMultiplier = 1.20;
+  if ((provider.completed_orders || 0) < 10) boostMultiplier *= 1.10;
+
+  const score = (
+    ratingScore * 0.30 +
+    responseScore * 0.20 +
+    acceptanceScore * 0.15 +
+    completedScore * 0.10 +
+    distanceScore * 0.25
+  ) * boostMultiplier;
+
+  return { score: Math.round(score * 1000) / 1000, distanceKm: Math.round(distanceKm * 10) / 10 };
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+  if (!lat1 || !lng1 || !lat2 || !lng2) return 999;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function dispatchToProviders(orderId, orderLat, orderLng, categoryId) {
+  const { data: providers } = await supabase.from('provider_profiles')
+    .select('*, profiles!inner(display_name, kyc_status)')
+    .eq('is_available', true).eq('is_verified', true);
+  if (!providers || providers.length === 0) return [];
+
+  const { data: boosts } = await supabase.from('boosts')
+    .select('provider_id').eq('active', true);
+  const boostedIds = new Set((boosts || []).map(b => b.provider_id));
+
+  const scored = providers.map(p => ({
+    ...p,
+    has_active_boost: boostedIds.has(p.id),
+    ...calculateDispatchScore({ ...p, has_active_boost: boostedIds.has(p.id) }, orderLat, orderLng)
+  }));
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, CONFIG.DISPATCH_CAP);
+}
+
+/* ============================================
+   OSRM ROUTING
+   ============================================ */
+async function getRoute(fromLat, fromLng, toLat, toLng, mode = 'driving') {
+  const profile = mode === 'walking' ? 'foot' : 'car';
+  const url = `https://router.project-osrm.org/route/v1/${profile}/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.code === 'Ok' && data.routes.length > 0) {
+      const route = data.routes[0];
+      return {
+        distanceKm: Math.round(route.distance / 100) / 10,
+        durationMin: Math.round(route.duration / 60),
+        geometry: route.geometry
+      };
+    }
+  } catch (e) { console.error('OSRM error:', e); }
+  return null;
+}
+
+let routeLayer = null;
+async function showRouteOnMap(map, fromLat, fromLng, toLat, toLng) {
+  if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+  const walkRoute = await getRoute(fromLat, fromLng, toLat, toLng, 'walking');
+  const driveRoute = await getRoute(fromLat, fromLng, toLat, toLng, 'driving');
+  if (driveRoute?.geometry) {
+    const coords = driveRoute.geometry.coordinates.map(c => [c[1], c[0]]);
+    routeLayer = L.polyline(coords, { color: '#2563eb', weight: 4, opacity: 0.8 }).addTo(map);
+    map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+  }
+  return { walking: walkRoute, driving: driveRoute };
+}
+
+/* ============================================
+   IMAGE UPLOAD (Supabase Storage)
+   ============================================ */
+async function uploadImage(file, bucket = 'photos', folder = '') {
+  if (!file) return null;
+  const ext = file.name.split('.').pop();
+  const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  showToast(t('uploading'), 'info');
+  const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+    cacheControl: '3600', upsert: false
+  });
+  if (error) { showToast(t('upload_error'), 'error'); return null; }
+  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+  showToast(t('upload_success'), 'success');
+  return urlData.publicUrl;
+}
+
+async function uploadOrderPhotos(files) {
+  const urls = [];
+  for (const file of files) {
+    const url = await uploadImage(file, 'order-photos', state.user?.id);
+    if (url) urls.push(url);
+  }
+  return urls;
+}
+
+async function uploadKycDocument(file, type) {
+  return uploadImage(file, 'kyc-documents', `${state.user?.id}/${type}`);
+}
+
+async function uploadAvatar(file) {
+  const url = await uploadImage(file, 'avatars', state.user?.id);
+  if (url) {
+    await supabase.from('profiles').update({ photo_url: url }).eq('id', state.user.id);
+    state.profile.photo_url = url;
+  }
+  return url;
+}
+
+/* ============================================
+   WEB PUSH NOTIFICATIONS
+   ============================================ */
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    await registerPushToken();
+    return true;
+  }
+  return false;
+}
+
+async function registerPushToken() {
+  if (!('serviceWorker' in navigator) || !state.user) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY'
+    });
+    const token = JSON.stringify(sub);
+    await supabase.from('push_tokens').upsert({
+      user_id: state.user.id, token, platform: 'web'
+    }, { onConflict: 'user_id,token' });
+  } catch (e) { console.error('Push registration failed:', e); }
+}
+
+function showLocalNotification(title, body) {
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: 'icon-192.png', badge: 'icon-192.png' });
+  }
+}
+
+/* ============================================
+   PAYMENT PROCESSING
+   ============================================ */
+async function processPayment(orderId, method) {
+  setLoading('payment', true);
+  render();
+  const o = state.currentOrder;
+  if (!o) { setLoading('payment', false); return; }
+
+  const country = state.profile?.country || 'SA';
+  const countryConfig = CONFIG.SUPPORTED_COUNTRIES[country] || CONFIG.SUPPORTED_COUNTRIES.SA;
+  const vatRate = countryConfig.vat;
+  const subtotal = o.quoted_price || 0;
+  const vat = subtotal * vatRate;
+  const total = subtotal + vat;
+  const commissionAmount = subtotal * CONFIG.DEFAULT_COMMISSION_RATE;
+  const netAmount = subtotal - commissionAmount;
+
+  const { data: payment, error } = await supabase.from('payments').insert({
+    order_id: orderId,
+    customer_id: o.customer_id,
+    provider_id: o.provider_id,
+    amount: total,
+    commission: commissionAmount,
+    net_amount: netAmount,
+    status: 'initiated',
+    method: method,
+    currency: o.currency
+  }).select().single();
+
+  if (error) {
+    showToast(t('payment_failed'), 'error');
+    setLoading('payment', false);
+    render();
+    return;
+  }
+
+  await supabase.from('orders').update({
+    status: 'payment_pending',
+    payment_status: 'initiated',
+    payment_method: method,
+    commission_amount: commissionAmount,
+    net_amount: netAmount,
+    final_price: total
+  }).eq('id', orderId);
+
+  // Simulate payment capture (in production: Tap redirect)
+  setTimeout(async () => {
+    await supabase.from('payments').update({ status: 'captured', captured_at: new Date().toISOString() }).eq('id', payment.id);
+    await supabase.from('orders').update({ status: 'in_progress', payment_status: 'captured' }).eq('id', orderId);
+    setLoading('payment', false);
+    showToast(t('payment_success'), 'success');
+    showLocalNotification('WorkFix', t('escrow_held'));
+    await loadOrder(orderId);
+    navigate('order-detail', { orderId });
+  }, 2000);
+}
+
+/* ============================================
+   ADMIN DATA - REPORTS & AUDIT
+   ============================================ */
+async function loadReportData(fromDate, toDate) {
+  let q = supabase.from('payments').select('amount, commission, net_amount, currency, created_at, status')
+    .eq('status', 'captured');
+  if (fromDate) q = q.gte('created_at', fromDate);
+  if (toDate) q = q.lte('created_at', toDate + 'T23:59:59');
+  const { data: payments } = await q;
+
+  const { count: totalOrders } = await supabase.from('orders').select('*', { count: 'exact', head: true });
+  const { count: cancelledOrders } = await supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'cancelled');
+  const { count: newUsers } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+  const { count: activeProviders } = await supabase.from('provider_profiles').select('*', { count: 'exact', head: true }).eq('is_available', true);
+  const { count: disputeCount } = await supabase.from('disputes').select('*', { count: 'exact', head: true });
+
+  const totalRevenue = (payments || []).reduce((s, p) => s + (p.amount || 0), 0);
+  const totalCommission = (payments || []).reduce((s, p) => s + (p.commission || 0), 0);
+  const avgOrderValue = payments?.length ? totalRevenue / payments.length : 0;
+  const disputeRate = totalOrders ? ((disputeCount || 0) / totalOrders * 100).toFixed(1) : 0;
+
+  // Weekly data for chart
+  const weeklyData = [0,0,0,0,0,0,0];
+  (payments || []).forEach(p => {
+    const day = new Date(p.created_at).getDay();
+    weeklyData[day] += p.amount || 0;
+  });
+
+  return {
+    totalRevenue, totalCommission, totalOrders: totalOrders || 0,
+    avgOrderValue, cancelledOrders: cancelledOrders || 0,
+    disputeRate, newUsers: newUsers || 0,
+    activeProviders: activeProviders || 0, weeklyData
+  };
+}
+
+async function loadAuditLogs(limit = 50) {
+  const { data } = await supabase.from('audit_logs').select('*')
+    .order('created_at', { ascending: false }).limit(limit);
+  return data || [];
+}
+
+/* ============================================
+   ADMIN DASHBOARD STATS
+   ============================================ */
+async function loadAdminStats() {
+  const [users, orders, kyc, disputes] = await Promise.all([
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).in('status', ['pending','quoted','confirmed','payment_pending','in_progress']),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('kyc_status', 'pending'),
+    supabase.from('disputes').select('*', { count: 'exact', head: true }).eq('status', 'open')
+  ]);
+  return {
+    totalUsers: users.count || 0,
+    activeOrders: orders.count || 0,
+    pendingKyc: kyc.count || 0,
+    openDisputes: disputes.count || 0
+  };
+}
+
+/* ============================================
+   DATA EXPORT & ACCOUNT DELETION
+   ============================================ */
+async function requestDataExport() {
+  await supabase.from('audit_logs').insert({
+    action: 'data_export_requested', actor_id: state.user.id,
+    payload: { user_id: state.user.id }
+  });
+  showToast(t('export_requested'), 'info');
+}
+
+async function requestAccountDeletion() {
+  const { error } = await supabase.from('profiles').update({
+    is_active: false
+  }).eq('id', state.user.id);
+  if (!error) {
+    await supabase.from('audit_logs').insert({
+      action: 'account_deletion_requested', actor_id: state.user.id,
+      payload: { user_id: state.user.id, grace_period_days: 30 }
+    });
+    showToast(t('done'), 'info');
+    handleLogout();
+  }
+}
+
+/* ============================================
+   PROVIDER DASHBOARD DATA
+   ============================================ */
+async function loadProviderDashboardData() {
+  if (!state.user) return { pendingQuotes: 0, activeJobs: 0, earnedToday: 0 };
+  const today = new Date().toISOString().split('T')[0];
+
+  const [quotes, jobs, earnings] = await Promise.all([
+    supabase.from('quotes').select('*', { count: 'exact', head: true })
+      .eq('provider_id', state.user.id).eq('status', 'pending'),
+    supabase.from('orders').select('*', { count: 'exact', head: true })
+      .eq('provider_id', state.user.id).eq('status', 'in_progress'),
+    supabase.from('payments').select('net_amount')
+      .eq('provider_id', state.user.id).eq('status', 'captured')
+      .gte('created_at', today + 'T00:00:00')
+  ]);
+
+  return {
+    pendingQuotes: quotes.count || 0,
+    activeJobs: jobs.count || 0,
+    earnedToday: (earnings.data || []).reduce((s, p) => s + (p.net_amount || 0), 0)
+  };
+}
+
+/* ============================================
+   ORDER PHOTO HANDLING
+   ============================================ */
+let pendingOrderPhotos = [];
+
+function handleOrderPhotoSelect(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    if (pendingOrderPhotos.length >= 5) return;
+    pendingOrderPhotos.push(file);
+  });
+  renderOrderPhotoPreview();
+}
+
+function renderOrderPhotoPreview() {
+  const el = $('#order-photo-preview');
+  if (!el) return;
+  el.innerHTML = pendingOrderPhotos.map((f, i) => `
+    <div class="photo-thumb">
+      <img src="${URL.createObjectURL(f)}" alt="">
+      <div class="remove-photo" onclick="removeOrderPhoto(${i})">✕</div>
+    </div>
+  `).join('');
+}
+
+function removeOrderPhoto(idx) {
+  pendingOrderPhotos.splice(idx, 1);
+  renderOrderPhotoPreview();
+}
+
+/* ============================================
+   KYC FILE HANDLING
+   ============================================ */
+let kycFiles = { front: null, back: null, license: null };
+
+function handleKycFileSelect(type, input) {
+  kycFiles[type] = input.files[0] || null;
+  const label = input.closest('label');
+  if (label && kycFiles[type]) {
+    label.innerHTML = `✅ ${kycFiles[type].name} <input type="file" accept="image/*" style="display:none" id="kyc-${type}" onchange="handleKycFileSelect('${type}',this)">`;
+  }
 }
 
 /* ============================================
@@ -2007,6 +2704,14 @@ function renderCreateOrder() {
           <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-sm)" onclick="useMyLocation()">📍 ${t('use_my_location')}</button>
         </div>
         <div class="input-group">
+          <label class="input-label">${t('photos')}</label>
+          <label class="btn btn-secondary btn-sm" style="cursor:pointer">
+            📷 ${t('add_photo')}
+            <input type="file" accept="image/*" multiple style="display:none" id="order-photos" onchange="handleOrderPhotoSelect(this)">
+          </label>
+          <div class="photo-grid" id="order-photo-preview"></div>
+        </div>
+        <div class="input-group">
           <label class="input-label">${t('budget')}</label>
           <input class="input" id="order-budget" type="number" min="0" placeholder="0.00" dir="ltr">
         </div>
@@ -2161,21 +2866,108 @@ async function handleSendMessage(convId) {
 }
 
 function renderExplore() {
+  const providers = state.routeParams.exploreProviders || [];
+  const routeInfo = state.routeParams.routeInfo;
   return `
     <div class="screen active">
       <div class="header">
         <div class="header-title">${t('explore')}</div>
       </div>
-      <div style="flex:1;position:relative">
-        <div id="explore-map" style="width:100%;height:100%"></div>
+      <div style="flex:1;position:relative;display:flex;flex-direction:column">
+        <div id="explore-map" style="flex:1;min-height:200px"></div>
         <div class="chip-row" style="position:absolute;top:var(--space-sm);left:0;right:0;z-index:500">
           ${state.categories.map(c => `
-            <div class="chip">${c.icon} ${getCategoryName(c)}</div>
+            <div class="chip" onclick="filterExploreCategory('${c.id}')">${c.icon} ${getCategoryName(c)}</div>
+          `).join('')}
+        </div>
+        ${routeInfo ? `
+          <div class="route-info">
+            <div class="route-stats">
+              ${routeInfo.driving ? `
+                <div class="route-stat">
+                  <div class="route-stat-value">🚗 ${routeInfo.driving.durationMin} ${t('min')}</div>
+                  <div class="route-stat-label">${t('driving')} · ${routeInfo.driving.distanceKm} ${t('km')}</div>
+                </div>
+              ` : ''}
+              ${routeInfo.walking ? `
+                <div class="route-stat">
+                  <div class="route-stat-value">🚶 ${routeInfo.walking.durationMin} ${t('min')}</div>
+                  <div class="route-stat-label">${t('walking')} · ${routeInfo.walking.distanceKm} ${t('km')}</div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        ` : ''}
+        <div style="max-height:35%;overflow-y:auto;background:var(--c-surface)">
+          ${providers.length === 0 ? `
+            <div style="padding:var(--space-lg);text-align:center;color:var(--c-text-secondary)">${t('no_orders_desc')}</div>
+          ` : providers.map((p, idx) => `
+            <div class="provider-card" onclick="navigate('provider-detail',{provider:state.routeParams.exploreProviders[${idx}]})">
+              <div class="avatar">${getInitials(p.profiles?.display_name)}</div>
+              <div class="provider-info">
+                <div class="provider-name">${p.profiles?.display_name || t('provider')}</div>
+                <div class="provider-meta">
+                  <span>⭐ ${(p.avg_rating || 4).toFixed(1)}</span>
+                  <span>📍 ${p.distanceKm || '—'} ${t('km')}</span>
+                  <span>⏱ ${Math.round(p.avg_response_minutes || 30)} ${t('min')}</span>
+                </div>
+              </div>
+              <span class="badge badge-primary">${t('dispatch_score')}: ${((p.score || 0) * 100).toFixed(0)}</span>
+            </div>
           `).join('')}
         </div>
       </div>
       ${renderCustomerTabs()}
     </div>`;
+}
+
+async function filterExploreCategory(categoryId) {
+  state.routeParams.exploreCategory = categoryId;
+  await loadExploreProviders();
+}
+
+async function loadExploreProviders() {
+  const { data: providers } = await supabase.from('provider_profiles')
+    .select('*, profiles!inner(display_name, photo_url, kyc_status)')
+    .eq('is_available', true).eq('is_verified', true);
+
+  if (!providers || providers.length === 0) {
+    state.routeParams.exploreProviders = [];
+    render();
+    return;
+  }
+
+  const userLat = state.routeParams.userLat || 24.7136;
+  const userLng = state.routeParams.userLng || 46.6753;
+
+  const { data: boosts } = await supabase.from('boosts').select('provider_id').eq('active', true);
+  const boostedIds = new Set((boosts || []).map(b => b.provider_id));
+
+  const scored = providers.map(p => {
+    const s = calculateDispatchScore({ ...p, has_active_boost: boostedIds.has(p.id) }, userLat, userLng);
+    return { ...p, ...s, has_active_boost: boostedIds.has(p.id) };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  state.routeParams.exploreProviders = scored.slice(0, CONFIG.DISPATCH_CAP);
+
+  render();
+
+  // Add markers to map
+  setTimeout(() => {
+    if (!exploreMap) return;
+    scored.forEach(p => {
+      if (p.location_lat && p.location_lng) {
+        const marker = L.marker([p.location_lat, p.location_lng]).addTo(exploreMap);
+        marker.bindPopup(`<b>${p.profiles?.display_name}</b><br>⭐ ${(p.avg_rating||4).toFixed(1)} · ${p.distanceKm} km`);
+        marker.on('click', async () => {
+          const routes = await showRouteOnMap(exploreMap, userLat, userLng, p.location_lat, p.location_lng);
+          state.routeParams.routeInfo = routes;
+          render();
+        });
+      }
+    });
+  }, 300);
 }
 
 function renderPayment() {
@@ -2211,6 +3003,9 @@ function renderPayment() {
           <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-sm);color:var(--c-text-secondary)">
             <span>${t('vat')} (${(vatRate * 100).toFixed(0)}%)</span><span>${formatCurrency(vat, o.currency)}</span>
           </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-sm);color:var(--c-text-muted);font-size:var(--font-sm)">
+            <span>${t('commission_fee')} (${(CONFIG.DEFAULT_COMMISSION_RATE * 100).toFixed(0)}%)</span><span>${formatCurrency(subtotal * CONFIG.DEFAULT_COMMISSION_RATE, o.currency)}</span>
+          </div>
           <div style="display:flex;justify-content:space-between;font-weight:700;font-size:var(--font-lg);border-top:1px solid var(--c-border);padding-top:var(--space-sm)">
             <span>${t('total')}</span><span>${formatCurrency(total, o.currency)}</span>
           </div>
@@ -2218,7 +3013,7 @@ function renderPayment() {
         <h3 style="margin-bottom:var(--space-md)">${t('select_method')}</h3>
         ${methods.map(m => `
           <div class="card card-padded card-hover" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:var(--space-md)"
-               onclick="showToast('${t('payment')} — ${m.label}','info')">
+               onclick="processPayment('${o.id}','${m.id}')">
             <span style="font-size:24px">${m.icon}</span>
             <span style="flex:1;font-weight:600">${m.label}</span>
             <span style="color:var(--c-text-muted)">→</span>
@@ -2271,7 +3066,11 @@ function renderProfile() {
       </div>
       <div class="content content-padded">
         <div style="text-align:center;margin-bottom:var(--space-xl)">
-          <div class="avatar avatar-xl" style="margin:0 auto var(--space-md)">${getInitials(p.display_name)}</div>
+          <div class="avatar avatar-xl" style="margin:0 auto var(--space-md);cursor:pointer;position:relative" onclick="document.getElementById('avatar-upload').click()">
+            ${p.photo_url ? `<img src="${p.photo_url}" alt="">` : getInitials(p.display_name)}
+            <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px">📷</div>
+          </div>
+          <input type="file" id="avatar-upload" accept="image/*" style="display:none" onchange="uploadAvatar(this.files[0]).then(()=>render())">
           <h2>${p.display_name}</h2>
           <p style="color:var(--c-text-secondary)">${p.email || ''}</p>
           <span class="badge badge-primary" style="margin-top:var(--space-sm)">${t(p.role)}</span>
@@ -2294,6 +3093,12 @@ function renderProfile() {
           </div>
           <div class="settings-item" onclick="navigate('settings')">
             <span class="si-icon">🔒</span><span class="si-text">${t('security')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" onclick="requestDataExport()">
+            <span class="si-icon">📦</span><span class="si-text">${t('export_data')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" style="color:var(--c-danger)" onclick="navigate('account-deletion')">
+            <span class="si-icon">🗑️</span><span class="si-text">${t('delete_account')}</span><span class="si-chevron">›</span>
           </div>
           <div class="settings-item" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))handleLogout()">
             <span class="si-icon">🚪</span><span class="si-text">${t('logout')}</span>
@@ -2512,21 +3317,21 @@ function renderKyc() {
               <label class="input-label">${t('national_id_front')}</label>
               <label class="btn btn-secondary btn-full" style="cursor:pointer">
                 📷 ${t('upload')}
-                <input type="file" accept="image/*" style="display:none" id="kyc-front">
+                <input type="file" accept="image/*" style="display:none" id="kyc-front" onchange="handleKycFileSelect('front',this)">
               </label>
             </div>
             <div class="input-group">
               <label class="input-label">${t('national_id_back')}</label>
               <label class="btn btn-secondary btn-full" style="cursor:pointer">
                 📷 ${t('upload')}
-                <input type="file" accept="image/*" style="display:none" id="kyc-back">
+                <input type="file" accept="image/*" style="display:none" id="kyc-back" onchange="handleKycFileSelect('back',this)">
               </label>
             </div>
             <div class="input-group">
               <label class="input-label">${t('trade_license')}</label>
               <label class="btn btn-secondary btn-full" style="cursor:pointer">
                 📷 ${t('upload')}
-                <input type="file" accept="image/*" style="display:none" id="kyc-license">
+                <input type="file" accept="image/*" style="display:none" id="kyc-license" onchange="handleKycFileSelect('license',this)">
               </label>
             </div>
           </div>
@@ -2537,8 +3342,21 @@ function renderKyc() {
 }
 
 async function submitKyc() {
-  await supabase.from('profiles').update({ kyc_status: 'pending' }).eq('id', state.user.id);
+  if (!kycFiles.front || !kycFiles.back) {
+    showToast(t('kyc_not_submitted'), 'error');
+    return;
+  }
+  const urls = {};
+  if (kycFiles.front) urls.id_front = await uploadKycDocument(kycFiles.front, 'id_front');
+  if (kycFiles.back) urls.id_back = await uploadKycDocument(kycFiles.back, 'id_back');
+  if (kycFiles.license) urls.trade_license = await uploadKycDocument(kycFiles.license, 'trade_license');
+
+  await supabase.from('profiles').update({
+    kyc_status: 'pending',
+    kyc_documents: urls
+  }).eq('id', state.user.id);
   state.profile.kyc_status = 'pending';
+  kycFiles = { front: null, back: null, license: null };
   showToast(t('done'), 'success');
   render();
 }
@@ -2610,11 +3428,11 @@ function renderAdminDashboard() {
         </div>
       </div>
       <div class="content content-padded">
-        <div class="stats-grid" style="margin-bottom:var(--space-lg)">
-          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('total_users')}</div></div>
-          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('active_orders')}</div></div>
-          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('pending_kyc')}</div></div>
-          <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">${t('open_disputes')}</div></div>
+        <div class="stats-grid" id="admin-stats-grid" style="margin-bottom:var(--space-lg)">
+          <div class="stat-card"><div class="stat-value"><div class="spinner" style="margin:0 auto;width:16px;height:16px;border-width:2px"></div></div><div class="stat-label">${t('total_users')}</div></div>
+          <div class="stat-card"><div class="stat-value"><div class="spinner" style="margin:0 auto;width:16px;height:16px;border-width:2px"></div></div><div class="stat-label">${t('active_orders')}</div></div>
+          <div class="stat-card"><div class="stat-value"><div class="spinner" style="margin:0 auto;width:16px;height:16px;border-width:2px"></div></div><div class="stat-label">${t('pending_kyc')}</div></div>
+          <div class="stat-card"><div class="stat-value"><div class="spinner" style="margin:0 auto;width:16px;height:16px;border-width:2px"></div></div><div class="stat-label">${t('open_disputes')}</div></div>
         </div>
         <div class="settings-list">
           <div class="settings-item" onclick="navigate('admin-users')">
@@ -2625,6 +3443,9 @@ function renderAdminDashboard() {
           </div>
           <div class="settings-item" onclick="navigate('admin-reports')">
             <span class="si-icon">📊</span><span class="si-text">${t('reports')}</span><span class="si-chevron">›</span>
+          </div>
+          <div class="settings-item" onclick="navigate('audit-logs')">
+            <span class="si-icon">📝</span><span class="si-text">${t('audit_logs')}</span><span class="si-chevron">›</span>
           </div>
           <div class="settings-item">
             <span class="si-icon">🌐</span><span class="si-text">${t('language')}</span>
@@ -2745,6 +3566,13 @@ async function loadAndRenderDisputes(filter) {
 }
 
 function renderAdminReports() {
+  const activePeriod = state.routeParams.reportPeriod || 'this_month';
+  const currency = CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR';
+  const rd = state.routeParams.reportData || {};
+  const dayLabels = state.lang === 'ar' ?
+    ['سب','أح','اث','ثل','أر','خم','جم'] :
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
   return `
     <div class="screen active">
       <div class="header">
@@ -2753,28 +3581,68 @@ function renderAdminReports() {
       </div>
       <div class="content content-padded">
         <div class="chip-row" style="padding:0;margin-bottom:var(--space-md)">
-          <div class="chip active">${t('this_month')}</div>
-          <div class="chip">${t('last_month')}</div>
-          <div class="chip">${t('three_months')}</div>
-          <div class="chip">${t('this_year')}</div>
+          ${['this_month','last_month','three_months','this_year'].map(p => `
+            <div class="chip ${activePeriod === p ? 'active' : ''}" onclick="loadReportPeriod('${p}')">${t(p)}</div>
+          `).join('')}
         </div>
-        <div class="stats-grid" style="margin-bottom:var(--space-lg)">
-          <div class="stat-card"><div class="stat-value">${formatCurrency(0, 'SAR')}</div><div class="stat-label">${t('revenue')}</div></div>
-          <div class="stat-card"><div class="stat-value">${formatCurrency(0, 'SAR')}</div><div class="stat-label">${t('commission')}</div></div>
-          <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">${t('total_orders_label')}</div></div>
-          <div class="stat-card"><div class="stat-value">${formatCurrency(0, 'SAR')}</div><div class="stat-label">${t('avg_order_value')}</div></div>
+        <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md)">
+          <div class="input-group" style="flex:1;margin:0">
+            <label class="input-label">${t('from_date')}</label>
+            <input class="input" type="date" id="report-from" dir="ltr">
+          </div>
+          <div class="input-group" style="flex:1;margin:0">
+            <label class="input-label">${t('to_date')}</label>
+            <input class="input" type="date" id="report-to" dir="ltr">
+          </div>
+        </div>
+        <div class="stats-grid" style="margin-bottom:var(--space-md)" id="report-stats">
+          <div class="stat-card"><div class="stat-value">${formatCurrency(rd.totalRevenue || 0, currency)}</div><div class="stat-label">${t('revenue')}</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(rd.totalCommission || 0, currency)}</div><div class="stat-label">${t('commission')}</div></div>
+          <div class="stat-card"><div class="stat-value">${rd.totalOrders || 0}</div><div class="stat-label">${t('total_orders_label')}</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(rd.avgOrderValue || 0, currency)}</div><div class="stat-label">${t('avg_order_value')}</div></div>
+        </div>
+        <div class="stats-grid" style="margin-bottom:var(--space-lg);grid-template-columns:repeat(2,1fr)">
+          <div class="stat-card"><div class="stat-value">${rd.cancelledOrders || 0}</div><div class="stat-label">${t('cancelled')}</div></div>
+          <div class="stat-card"><div class="stat-value">${rd.disputeRate || 0}%</div><div class="stat-label">${t('disputes')}</div></div>
+          <div class="stat-card"><div class="stat-value">${rd.newUsers || 0}</div><div class="stat-label">${t('total_users')}</div></div>
+          <div class="stat-card"><div class="stat-value">${rd.activeProviders || 0}</div><div class="stat-label">${t('provider')}</div></div>
         </div>
         <div class="card card-padded">
           <h3 style="margin-bottom:var(--space-md)">${t('revenue')}</h3>
           <div class="bar-chart">
-            ${['Sat','Sun','Mon','Tue','Wed','Thu','Fri'].map((d, i) => {
-              const h = Math.random() * 80 + 20;
-              return `<div class="bar-col"><div class="bar-fill" style="height:${h}%"></div><div class="bar-label">${d}</div></div>`;
+            ${(rd.weeklyData || [0,0,0,0,0,0,0]).map((val, i) => {
+              const maxVal = Math.max(...(rd.weeklyData || [1]));
+              const h = maxVal > 0 ? (val / maxVal * 100) : 5;
+              return `<div class="bar-col"><div class="bar-fill" style="height:${Math.max(h, 4)}%"></div><div class="bar-label">${dayLabels[i]}</div></div>`;
             }).join('')}
           </div>
         </div>
       </div>
     </div>`;
+}
+
+async function loadReportPeriod(period) {
+  state.routeParams.reportPeriod = period;
+  const now = new Date();
+  let fromDate, toDate;
+
+  if (period === 'this_month') {
+    fromDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    toDate = now.toISOString().split('T')[0];
+  } else if (period === 'last_month') {
+    fromDate = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+    toDate = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+  } else if (period === 'three_months') {
+    fromDate = new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().split('T')[0];
+    toDate = now.toISOString().split('T')[0];
+  } else {
+    fromDate = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+    toDate = now.toISOString().split('T')[0];
+  }
+
+  const data = await loadReportData(fromDate, toDate);
+  state.routeParams.reportData = data;
+  render();
 }
 
 /* ============================================
@@ -2788,14 +3656,23 @@ function renderSettings() {
         <div class="header-title">${t('notifications')}</div>
       </div>
       <div class="content content-padded">
+        <div class="card card-padded" style="margin-bottom:var(--space-md)">
+          <button class="btn btn-primary btn-full" onclick="requestNotificationPermission().then(ok => showToast(ok ? t('done') : 'Permission denied', ok ? 'success' : 'error'))">
+            🔔 ${t('notif_enable')}
+          </button>
+        </div>
         <div class="settings-list">
           <div class="settings-item">
-            <span class="si-icon">📬</span><span class="si-text">${t('notifications')}</span>
+            <span class="si-icon">📬</span><span class="si-text">${t('notif_orders')}</span>
             <div class="toggle on" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="settings-item">
-            <span class="si-icon">💬</span><span class="si-text">${t('open_chat')}</span>
+            <span class="si-icon">💬</span><span class="si-text">${t('notif_chat')}</span>
             <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-item">
+            <span class="si-icon">📢</span><span class="si-text">${t('notif_promo')}</span>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
           </div>
         </div>
       </div>
@@ -2901,6 +3778,407 @@ function useMyLocation() {
 }
 
 /* ============================================
+   PHONE VERIFY SCREEN (OTP)
+   ============================================ */
+let otpTimer = 59;
+let otpInterval = null;
+
+function renderPhoneVerify() {
+  const phone = state.routeParams.phone || '+966...';
+  return `
+    <div class="screen active" style="justify-content:center">
+      <div class="content-padded" style="max-width:400px;margin:0 auto;width:100%;text-align:center">
+        <div style="font-size:48px;margin-bottom:var(--space-md)">📱</div>
+        <h2 style="margin-bottom:var(--space-sm)">${t('otp_title')}</h2>
+        <p style="color:var(--c-text-secondary);margin-bottom:var(--space-lg)">${t('otp_subtitle')} ${phone}</p>
+        <div class="otp-row" id="otp-row">
+          ${[0,1,2,3,4,5].map(i => `
+            <input class="otp-cell" type="text" inputmode="numeric" maxlength="1" id="otp-${i}"
+                   oninput="handleOtpInput(${i})" onkeydown="handleOtpKeydown(event,${i})">
+          `).join('')}
+        </div>
+        <div id="otp-timer" style="color:var(--c-text-secondary);margin-bottom:var(--space-lg)">
+          ${t('otp_resend_in')} <span id="otp-countdown">0:59</span>
+        </div>
+        <button class="btn btn-ghost btn-full" id="otp-resend-btn" disabled onclick="resendOtp()">${t('otp_resend')}</button>
+        <button class="btn btn-secondary btn-full" style="margin-top:var(--space-sm)" onclick="goBack()">${t('back')}</button>
+      </div>
+    </div>`;
+}
+
+function handleOtpInput(idx) {
+  const cell = $(`#otp-${idx}`);
+  if (!cell) return;
+  cell.value = cell.value.replace(/[^0-9]/g, '').slice(-1);
+  if (cell.value && idx < 5) $(`#otp-${idx + 1}`)?.focus();
+  if (idx === 5 && cell.value) verifyOtp();
+}
+
+function handleOtpKeydown(e, idx) {
+  if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+    $(`#otp-${idx - 1}`)?.focus();
+  }
+}
+
+function getOtpValue() {
+  return [0,1,2,3,4,5].map(i => $(`#otp-${i}`)?.value || '').join('');
+}
+
+async function verifyOtp() {
+  const code = getOtpValue();
+  if (code.length !== 6) return;
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone: state.routeParams.phone,
+    token: code,
+    type: 'sms'
+  });
+
+  if (error) {
+    showToast(t('otp_error'), 'error');
+    $$('.otp-cell').forEach(c => c.classList.add('error'));
+    setTimeout(() => $$('.otp-cell').forEach(c => c.classList.remove('error')), 600);
+    return;
+  }
+
+  await loadUserProfile();
+  navigate(getDefaultRoute());
+}
+
+function startOtpTimer() {
+  otpTimer = 59;
+  clearInterval(otpInterval);
+  otpInterval = setInterval(() => {
+    otpTimer--;
+    const el = $('#otp-countdown');
+    if (el) el.textContent = `0:${otpTimer.toString().padStart(2, '0')}`;
+    if (otpTimer <= 0) {
+      clearInterval(otpInterval);
+      const btn = $('#otp-resend-btn');
+      if (btn) btn.disabled = false;
+    }
+  }, 1000);
+}
+
+async function resendOtp() {
+  const phone = state.routeParams.phone;
+  if (!phone) return;
+  await supabase.auth.signInWithOtp({ phone });
+  startOtpTimer();
+  const btn = $('#otp-resend-btn');
+  if (btn) btn.disabled = true;
+  showToast(t('done'), 'success');
+}
+
+/* ============================================
+   SUBSCRIPTION SCREEN
+   ============================================ */
+function renderSubscription() {
+  const currentTier = state.providerProfile?.subscription_tier || 'free';
+  const isYearly = state.routeParams.yearly || false;
+  const currency = CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR';
+
+  const plans = [
+    {
+      id: 'free', name: t('free_tier'), price: 0, priceYearly: 0,
+      features: [t('plan_feature_basic'), t('plan_feature_standard')],
+      popular: false
+    },
+    {
+      id: 'pro', name: t('pro_tier'), price: 49, priceYearly: 490,
+      features: [t('plan_feature_visibility'), t('plan_feature_priority'), t('plan_feature_basic')],
+      popular: true
+    },
+    {
+      id: 'business', name: t('business_tier'), price: 149, priceYearly: 1490,
+      features: [t('plan_feature_analytics'), t('plan_feature_agency'), t('plan_feature_visibility'), t('plan_feature_priority')],
+      popular: false
+    }
+  ];
+
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('subscription_title')}</div>
+      </div>
+      <div class="content content-padded">
+        <div style="display:flex;justify-content:center;gap:var(--space-sm);margin-bottom:var(--space-lg)">
+          <div class="chip ${!isYearly ? 'active' : ''}" onclick="state.routeParams.yearly=false;render()">${t('monthly')}</div>
+          <div class="chip ${isYearly ? 'active' : ''}" onclick="state.routeParams.yearly=true;render()">
+            ${t('yearly')} <span style="color:var(--c-success);font-size:var(--font-xs)">— ${t('save_percent')} 17%</span>
+          </div>
+        </div>
+        ${plans.map(plan => `
+          <div class="plan-card ${currentTier === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}" style="margin-bottom:var(--space-md)"
+               ${currentTier !== plan.id && plan.id !== 'free' ? `onclick="subscribeToPlan('${plan.id}','${isYearly ? 'yearly' : 'monthly'}')"` : ''}>
+            <h3>${plan.name}</h3>
+            <div class="plan-price">
+              ${plan.price === 0 ? t('free_tier') : formatCurrency(isYearly ? plan.priceYearly : plan.price, currency)}
+            </div>
+            <div class="plan-period">${plan.price > 0 ? (isYearly ? '/' + t('yearly') : '/' + t('monthly')) : ''}</div>
+            <ul class="plan-features">
+              ${plan.features.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+            ${currentTier === plan.id ?
+              `<div class="badge badge-success">${t('current_plan')}</div>` :
+              plan.id !== 'free' ? `<button class="btn btn-primary btn-full">${t('subscribe')}</button>` : ''
+            }
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+async function subscribeToPlan(tier, period) {
+  if (!state.flags.subscriptions_enabled) {
+    showToast('Subscriptions coming soon', 'info');
+    return;
+  }
+  const priceMap = { pro_monthly: 49, pro_yearly: 490, business_monthly: 149, business_yearly: 1490 };
+  const price = priceMap[`${tier}_${period}`] || 0;
+  const currency = CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR';
+  const periodEnd = new Date();
+  periodEnd.setMonth(periodEnd.getMonth() + (period === 'yearly' ? 12 : 1));
+
+  const { error } = await supabase.from('subscriptions').insert({
+    provider_id: state.user.id,
+    tier, period, amount: price, currency,
+    status: 'active',
+    current_period_end: periodEnd.toISOString()
+  });
+
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  goBack();
+}
+
+/* ============================================
+   BOOST SCREEN
+   ============================================ */
+function renderBoost() {
+  const currency = CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR';
+  const activeBoost = state.routeParams.activeBoost;
+
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('boost_title')}</div>
+      </div>
+      <div class="content content-padded">
+        <div style="text-align:center;margin-bottom:var(--space-lg)">
+          <div style="font-size:48px;margin-bottom:var(--space-md)">🚀</div>
+          <h2 style="margin-bottom:var(--space-sm)">${t('boost_title')}</h2>
+          <p style="color:var(--c-text-secondary)">${t('boost_desc')}</p>
+          <div class="badge badge-info" style="margin-top:var(--space-sm)">${t('boost_multiplier')}</div>
+        </div>
+
+        ${activeBoost ? `
+          <div class="card card-padded" style="margin-bottom:var(--space-lg);border-color:var(--c-success);background:var(--c-success-light)">
+            <div style="display:flex;align-items:center;gap:var(--space-md)">
+              <span style="font-size:24px">✅</span>
+              <div>
+                <div style="font-weight:600;color:var(--c-success)">${t('boost_active')}</div>
+                <div style="font-size:var(--font-sm);color:var(--c-text-secondary)">
+                  ${t('boost_expires')}: ${formatDate(activeBoost.expires_at)}
+                </div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${[7, 14, 30].map(d => {
+          const price = CONFIG.BOOST_PLANS[d].price;
+          return `
+            <div class="card card-padded card-hover" style="margin-bottom:var(--space-sm);display:flex;align-items:center;justify-content:space-between"
+                 onclick="purchaseBoost(${d})">
+              <div>
+                <div style="font-weight:600">${d} ${t('days')}</div>
+                <div style="font-size:var(--font-sm);color:var(--c-text-secondary)">${t('boost_multiplier')}</div>
+              </div>
+              <div style="text-align:end">
+                <div style="font-weight:700;color:var(--c-primary)">${formatCurrency(price, currency)}</div>
+                <button class="btn btn-primary btn-sm" style="margin-top:var(--space-xs)">${t('buy_boost')}</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+async function purchaseBoost(duration) {
+  if (!state.flags.boost_enabled) {
+    showToast('Boosts coming soon', 'info');
+    return;
+  }
+  const price = CONFIG.BOOST_PLANS[duration].price;
+  const currency = CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR';
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + duration);
+
+  const { error } = await supabase.from('boosts').insert({
+    provider_id: state.user.id,
+    duration, price, currency,
+    active: true,
+    expires_at: expiresAt.toISOString()
+  });
+
+  if (error) { showToast(error.message, 'error'); return; }
+  showToast(t('done'), 'success');
+  state.routeParams.activeBoost = { expires_at: expiresAt.toISOString() };
+  render();
+}
+
+/* ============================================
+   PROVIDER DETAIL SCREEN (from Explore)
+   ============================================ */
+function renderProviderDetail() {
+  const p = state.routeParams.provider;
+  if (!p) return `<div class="screen active"><div class="spinner-center"><div class="spinner"></div></div></div>`;
+
+  const rating = p.avg_rating || CONFIG.BAYESIAN_M;
+  const ratingCount = p.rating_count || 0;
+
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('provider_detail')}</div>
+      </div>
+      <div class="content content-padded">
+        <div style="text-align:center;margin-bottom:var(--space-lg)">
+          <div class="avatar avatar-xl" style="margin:0 auto var(--space-md)">
+            ${p.profiles?.photo_url ? `<img src="${p.profiles.photo_url}" alt="">` : getInitials(p.profiles?.display_name)}
+          </div>
+          <h2>${p.profiles?.display_name || t('provider')}</h2>
+          <div class="stars" style="justify-content:center;margin:var(--space-sm) 0">
+            ${[1,2,3,4,5].map(n => `<span class="star ${n <= Math.round(rating) ? 'filled' : ''}">★</span>`).join('')}
+          </div>
+          <span style="color:var(--c-text-secondary);font-size:var(--font-sm)">
+            ${rating.toFixed(1)} · ${ratingCount} ${t('reviews_count')}
+          </span>
+          ${p.bio ? `<p style="color:var(--c-text-secondary);margin-top:var(--space-md);font-size:var(--font-sm)">${p.bio}</p>` : ''}
+        </div>
+
+        <div class="stats-grid" style="margin-bottom:var(--space-lg)">
+          <div class="stat-card">
+            <div class="stat-value">${p.completed_orders || 0}</div>
+            <div class="stat-label">${t('completed_jobs')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${Math.round(p.avg_response_minutes || 30)}</div>
+            <div class="stat-label">${t('response_time')} (${t('min')})</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${((p.acceptance_rate || 0.8) * 100).toFixed(0)}%</div>
+            <div class="stat-label">${t('accept')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${p.distanceKm || '—'}</div>
+            <div class="stat-label">${t('distance')} (${t('km')})</div>
+          </div>
+        </div>
+
+        ${p.service_categories?.length ? `
+          <div style="margin-bottom:var(--space-lg)">
+            <h3 style="margin-bottom:var(--space-sm)">${t('service_categories')}</h3>
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+              ${p.service_categories.map(c => `<span class="badge badge-primary">${c}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        ${p.hourly_rate ? `
+          <div class="card card-padded" style="margin-bottom:var(--space-md)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-weight:600">${t('hourly_rate')}</span>
+              <span style="font-weight:700;font-size:var(--font-lg);color:var(--c-primary)">
+                ${formatCurrency(p.hourly_rate, CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR')}/h
+              </span>
+            </div>
+          </div>
+        ` : ''}
+
+        <div style="font-size:var(--font-xs);color:var(--c-text-muted);text-align:center;margin-bottom:var(--space-md)">
+          ${t('member_since')} ${formatDate(p.created_at)}
+        </div>
+
+        <button class="btn btn-primary btn-full btn-lg" onclick="navigate('create-order')">${t('request_service')}</button>
+      </div>
+    </div>`;
+}
+
+/* ============================================
+   ADMIN AUDIT LOG SCREEN
+   ============================================ */
+function renderAuditLogs() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-title">${t('audit_logs')}</div>
+      </div>
+      <div class="content" id="audit-logs-list">
+        <div class="spinner-center"><div class="spinner"></div></div>
+      </div>
+    </div>`;
+}
+
+async function loadAndRenderAuditLogs() {
+  const logs = await loadAuditLogs();
+  const el = $('#audit-logs-list');
+  if (!el) return;
+  if (logs.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-text">${t('no_logs')}</div></div>`;
+    return;
+  }
+  el.innerHTML = logs.map(log => `
+    <div class="audit-row">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="audit-action">${log.action}</span>
+        <span class="audit-time">${formatDate(log.created_at)} ${formatTime(log.created_at)}</span>
+      </div>
+      <div class="audit-actor">${log.actor_id === 'system' ? '🤖 System' : '👤 ' + log.actor_id.slice(0, 8)}</div>
+      ${log.payload && Object.keys(log.payload).length > 0 ?
+        `<div style="font-size:var(--font-xs);color:var(--c-text-muted);margin-top:2px;word-break:break-all">${JSON.stringify(log.payload)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+/* ============================================
+   ACCOUNT DELETION SCREEN
+   ============================================ */
+function renderAccountDeletion() {
+  return `
+    <div class="screen active">
+      <div class="header">
+        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-title">${t('account_deletion')}</div>
+      </div>
+      <div class="content content-padded">
+        <div style="text-align:center;margin-bottom:var(--space-lg)">
+          <div style="font-size:48px;margin-bottom:var(--space-md)">⚠️</div>
+          <h2 style="color:var(--c-danger);margin-bottom:var(--space-md)">${t('account_deletion')}</h2>
+          <p style="color:var(--c-text-secondary)">${t('delete_warning')}</p>
+        </div>
+        <div class="input-group">
+          <label class="input-label">${t('delete_confirm')}</label>
+          <input class="input" id="delete-confirm-input" placeholder="DELETE" dir="ltr">
+        </div>
+        <button class="btn btn-danger btn-full btn-lg" onclick="doDeleteAccount()">${t('delete_account')}</button>
+      </div>
+    </div>`;
+}
+
+function doDeleteAccount() {
+  const val = $('#delete-confirm-input')?.value;
+  if (val !== 'DELETE') { showToast(t('delete_confirm'), 'error'); return; }
+  requestAccountDeletion();
+}
+
+/* ============================================
    MAIN RENDER
    ============================================ */
 function render() {
@@ -2933,6 +4211,12 @@ function render() {
     case 'admin-users': html = renderAdminUsers(); break;
     case 'admin-disputes': html = renderAdminDisputes(); break;
     case 'admin-reports': html = renderAdminReports(); break;
+    case 'phone-verify': html = renderPhoneVerify(); break;
+    case 'subscription': html = renderSubscription(); break;
+    case 'boost': html = renderBoost(); break;
+    case 'provider-detail': html = renderProviderDetail(); break;
+    case 'audit-logs': html = renderAuditLogs(); break;
+    case 'account-deletion': html = renderAccountDeletion(); break;
     default: html = renderLogin();
   }
 
@@ -2940,13 +4224,68 @@ function render() {
 
   // Post-render hooks
   if (state.route === 'create-order') initOrderMap();
-  if (state.route === 'explore') initExploreMap();
+  if (state.route === 'explore') {
+    initExploreMap();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        state.routeParams.userLat = pos.coords.latitude;
+        state.routeParams.userLng = pos.coords.longitude;
+        if (exploreMap) exploreMap.setView([pos.coords.latitude, pos.coords.longitude], 13);
+        loadExploreProviders();
+      }, () => loadExploreProviders());
+    } else {
+      loadExploreProviders();
+    }
+  }
   if (state.route === 'chat') {
     const msgList = $('#chat-messages');
     if (msgList) msgList.scrollTop = msgList.scrollHeight;
   }
   if (state.route === 'admin-users') debouncedSearchUsers('');
   if (state.route === 'admin-disputes') loadAndRenderDisputes(state.routeParams.disputeFilter || 'all');
+  if (state.route === 'audit-logs') loadAndRenderAuditLogs();
+  if (state.route === 'phone-verify') { setTimeout(() => { startOtpTimer(); $('#otp-0')?.focus(); }, 100); }
+  if (state.route === 'admin-dashboard') {
+    loadAdminStats().then(stats => {
+      const grid = $('#admin-stats-grid');
+      if (!grid) return;
+      const labels = [t('total_users'), t('active_orders'), t('pending_kyc'), t('open_disputes')];
+      const vals = [stats.totalUsers, stats.activeOrders, stats.pendingKyc, stats.openDisputes];
+      grid.innerHTML = vals.map((v, i) => `
+        <div class="stat-card"><div class="stat-value">${v}</div><div class="stat-label">${labels[i]}</div></div>
+      `).join('');
+    });
+  }
+  if (state.route === 'provider-dashboard') {
+    loadProviderDashboardData().then(data => {
+      const cards = $$('.stat-card .stat-value');
+      if (cards.length >= 3) {
+        cards[0].textContent = data.pendingQuotes;
+        cards[1].textContent = data.activeJobs;
+        cards[2].textContent = formatCurrency(data.earnedToday, CONFIG.SUPPORTED_COUNTRIES[state.profile?.country || 'SA']?.currency || 'SAR');
+      }
+    });
+    loadIncomingRequests().then(orders => {
+      const el = $('#incoming-requests');
+      if (!el || !orders.length) return;
+      el.innerHTML = orders.map(o => `
+        <div class="order-card" onclick="navigate('quote-submit',{orderId:'${o.id}'})">
+          <div class="order-card-top">
+            <div class="order-card-title">${o.title}</div>
+            ${statusBadge(o.status)}
+          </div>
+          <div class="order-card-meta">
+            <span>📍 ${o.address || ''}</span>
+            <span>🕐 ${timeAgo(o.created_at)}</span>
+          </div>
+          ${o.budget ? `<div class="order-card-price">${formatCurrency(o.budget, o.currency)}</div>` : ''}
+        </div>
+      `).join('');
+    });
+  }
+  if (state.route === 'admin-reports' && !state.routeParams.reportData) {
+    loadReportPeriod('this_month');
+  }
 
   // Bind events
   bindEvents();
@@ -3115,6 +4454,18 @@ navigate = async function(route, params = {}) {
   }
   if (route === 'quote-submit' && params.orderId) {
     await loadOrder(params.orderId);
+    render();
+  }
+  if (route === 'provider-earnings') {
+    await loadEarnings();
+    render();
+  }
+  if (route === 'chat' && params.conversationId) {
+    await loadMessages(params.conversationId);
+    render();
+  }
+  if (route === 'explore' && state.categories.length === 0) {
+    await loadCategories();
     render();
   }
 };
