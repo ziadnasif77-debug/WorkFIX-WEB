@@ -299,4 +299,3 @@ navigate = async function(route, params = {}) {
 
 // Start the app
 init();
-</script>
