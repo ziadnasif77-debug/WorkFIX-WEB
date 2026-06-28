@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>WorkFix</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ============================================
    CSS CUSTOM PROPERTIES
@@ -69,7 +70,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;-webkit-text-size-adjust:100%}
 body{
-  height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   font-size:var(--font-md);color:var(--c-text);background:var(--c-bg);
   -webkit-font-smoothing:antialiased;overflow:hidden;
 }
@@ -450,14 +451,14 @@ html[dir="rtl"] .toggle.on::after{transform:translateX(-20px)}
 .plan-card.selected{border-color:var(--c-primary);background:var(--c-primary-light)}
 .plan-card.popular{position:relative}
 .plan-card.popular::before{
-  content:'⭐';position:absolute;top:-12px;inset-inline-end:12px;
+  content:'★';position:absolute;top:-12px;inset-inline-end:12px;
   background:var(--c-warning);color:#fff;padding:2px 10px;border-radius:var(--radius-full);font-size:var(--font-xs);
 }
 .plan-price{font-size:var(--font-xxl);font-weight:800;color:var(--c-primary);margin:var(--space-sm) 0}
 .plan-period{font-size:var(--font-sm);color:var(--c-text-secondary)}
 .plan-features{list-style:none;padding:0;margin:var(--space-md) 0;text-align:start}
 .plan-features li{padding:var(--space-xs) 0;font-size:var(--font-sm);color:var(--c-text-secondary)}
-.plan-features li::before{content:'✓ ';color:var(--c-success);font-weight:700}
+.plan-features li::before{content:'✔ ';color:var(--c-success);font-weight:700}
 
 /* Provider card (explore) */
 .provider-card{
@@ -525,6 +526,7 @@ html[dir="rtl"] .toggle.on::after{transform:translateX(-20px)}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 <script>
 /* ============================================
    CONFIGURATION
@@ -1682,6 +1684,15 @@ function timeAgo(dateStr) {
   return `${days}d ${t('ago')}`;
 }
 
+const ICON_MAP = {'🔧':'wrench','⚡':'zap','🎨':'paintbrush','🧹':'sparkles','❄️':'snowflake','🪚':'hammer','📦':'truck','🌱':'leaf','🔌':'plug','🏠':'home'};
+function catIconMap(emoji) { return ICON_MAP[emoji] || 'tool'; }
+function icon(name, size = 20, cls = '') {
+  return `<i data-lucide="${name}" style="width:${size}px;height:${size}px;display:inline-block;vertical-align:middle" class="${cls}"></i>`;
+}
+function refreshIcons() {
+  if (window.lucide) window.lucide.createIcons();
+}
+
 function statusBadge(status) {
   const map = {
     pending: 'badge-warning', quoted: 'badge-info', confirmed: 'badge-primary',
@@ -2391,7 +2402,8 @@ function handleKycFileSelect(type, input) {
   kycFiles[type] = input.files[0] || null;
   const label = input.closest('label');
   if (label && kycFiles[type]) {
-    label.innerHTML = `✅ ${kycFiles[type].name} <input type="file" accept="image/*" style="display:none" id="kyc-${type}" onchange="handleKycFileSelect('${type}',this)">`;
+    label.innerHTML = `<i data-lucide="check-circle" style="width:18px;height:18px;display:inline-block;vertical-align:middle;color:var(--c-success)"></i> ${kycFiles[type].name} <input type="file" accept="image/*" style="display:none" id="kyc-${type}" onchange="handleKycFileSelect('${type}',this)">`;
+    refreshIcons();
   }
 }
 
@@ -2449,7 +2461,7 @@ function renderLogin() {
     <div class="screen active" style="justify-content:center">
       <div class="content-padded" style="max-width:400px;margin:0 auto;width:100%">
         <div style="text-align:center;margin-bottom:var(--space-xl)">
-          <div style="font-size:48px;margin-bottom:var(--space-md)">🔧</div>
+          <div style="margin-bottom:var(--space-md)">${icon('wrench', 48)}</div>
           <h1 style="font-size:var(--font-xxl);font-weight:800;margin-bottom:var(--space-xs)">WorkFix</h1>
           <p style="color:var(--c-text-secondary)">${t('welcome_back')}</p>
         </div>
@@ -2494,7 +2506,7 @@ function renderRegister() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="navigate('login')">←</div>
+        <div class="header-back" onclick="navigate('login')">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('create_account')}</div>
       </div>
       <div class="content content-padded" style="max-width:400px;margin:0 auto;width:100%">
@@ -2519,12 +2531,12 @@ function renderRegister() {
           <div style="display:flex;gap:var(--space-sm)">
             <div id="role-customer" class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'customer' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
                  onclick="selectRole('customer')">
-              <div style="font-size:28px;margin-bottom:var(--space-xs)">🏠</div>
+              <div style="margin-bottom:var(--space-xs)">${icon('home', 28)}</div>
               <div style="font-weight:600;font-size:var(--font-sm)">${t('looking_for_service')}</div>
             </div>
             <div id="role-provider" class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'provider' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
                  onclick="selectRole('provider')">
-              <div style="font-size:28px;margin-bottom:var(--space-xs)">🔧</div>
+              <div style="margin-bottom:var(--space-xs)">${icon('wrench', 28)}</div>
               <div style="font-weight:600;font-size:var(--font-sm)">${t('offering_service')}</div>
             </div>
           </div>
@@ -2556,7 +2568,7 @@ function renderForgotPassword() {
   return `
     <div class="screen active" style="justify-content:center">
       <div class="content-padded" style="max-width:400px;margin:0 auto;width:100%">
-        <div class="header-back" onclick="navigate('login')" style="margin-bottom:var(--space-lg)">←</div>
+        <div class="header-back" onclick="navigate('login')" style="margin-bottom:var(--space-lg)">${icon('arrow-left', 20)}</div>
         <h2 style="margin-bottom:var(--space-md)">${t('reset_password')}</h2>
         <div class="input-group">
           <label class="input-label">${t('email')}</label>
@@ -2581,13 +2593,13 @@ function renderCustomerHome() {
       </div>
       <div class="content">
         <div class="search-bar" onclick="navigate('explore')">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon">${icon('search', 18)}</span>
           <input placeholder="${t('search_services')}" readonly style="cursor:pointer">
         </div>
         <div class="category-grid">
           ${state.categories.map(cat => `
             <div class="category-card" onclick="navigate('create-order',{categoryId:'${cat.id}',categoryName:'${getCategoryName(cat)}',categoryIcon:'${cat.icon}'})">
-              <div class="cat-icon">${cat.icon}</div>
+              <div class="cat-icon">${icon(catIconMap(cat.icon), 28)}</div>
               <div class="cat-name">${getCategoryName(cat)}</div>
             </div>
           `).join('')}
@@ -2598,7 +2610,7 @@ function renderCustomerHome() {
         </div>
         ${state.orders.length === 0 ? `
           <div class="empty-state" style="padding:var(--space-lg)">
-            <div class="empty-icon">📋</div>
+            <div class="empty-icon">${icon('clipboard-list', 48)}</div>
             <div class="empty-text">${t('no_orders_desc')}</div>
           </div>
         ` : `
@@ -2622,28 +2634,28 @@ function renderCustomerHome() {
 
 function renderCustomerTabs() {
   const tabs = [
-    { id: 'home', icon: '🏠', label: t('home') },
-    { id: 'orders', icon: '📋', label: t('my_orders') },
-    { id: 'explore', icon: '🧭', label: t('explore') },
-    { id: 'profile', icon: '👤', label: t('profile') }
+    { id: 'home', icon: 'home', label: t('home') },
+    { id: 'orders', icon: 'clipboard-list', label: t('my_orders') },
+    { id: 'explore', icon: 'compass', label: t('explore') },
+    { id: 'profile', icon: 'user', label: t('profile') }
   ];
   return `<div class="tab-bar">${tabs.map(tab => `
     <div class="tab-item ${state.activeTab === tab.id ? 'active' : ''}" onclick="state.activeTab='${tab.id}';navigate('${tab.id === 'home' ? 'home' : tab.id}')">
-      <span class="tab-icon">${tab.icon}</span>
+      <span class="tab-icon">${icon(tab.icon, 22)}</span>
       <span class="tab-label">${tab.label}</span>
     </div>`).join('')}</div>`;
 }
 
 function renderProviderTabs() {
   const tabs = [
-    { id: 'provider-dashboard', icon: '📊', label: t('dashboard') },
-    { id: 'provider-orders', icon: '📋', label: t('my_orders') },
-    { id: 'provider-earnings', icon: '💰', label: t('earnings') },
-    { id: 'provider-profile', icon: '👤', label: t('profile') }
+    { id: 'provider-dashboard', icon: 'layout-dashboard', label: t('dashboard') },
+    { id: 'provider-orders', icon: 'clipboard-list', label: t('my_orders') },
+    { id: 'provider-earnings', icon: 'wallet', label: t('earnings') },
+    { id: 'provider-profile', icon: 'user', label: t('profile') }
   ];
   return `<div class="tab-bar">${tabs.map(tab => `
     <div class="tab-item ${state.route === tab.id ? 'active' : ''}" onclick="navigate('${tab.id}')">
-      <span class="tab-icon">${tab.icon}</span>
+      <span class="tab-icon">${icon(tab.icon, 22)}</span>
       <span class="tab-label">${tab.label}</span>
     </div>`).join('')}</div>`;
 }
@@ -2676,7 +2688,7 @@ function renderOrders() {
                 ${statusBadge(o.status)}
               </div>
               <div class="order-card-meta">
-                <span>${o.categories?.icon || '🔧'} ${getCategoryName(o.categories)}</span>
+                <span>${icon(catIconMap(o.categories?.icon), 16)} ${getCategoryName(o.categories)}</span>
                 <span>${timeAgo(o.created_at)}</span>
                 ${o.quoted_price ? `<span class="order-card-price">${formatCurrency(o.quoted_price, o.currency)}</span>` : ''}
               </div>
@@ -2694,16 +2706,16 @@ function renderCreateOrder() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('new_order')}</div>
       </div>
       <div class="content content-padded">
-        ${catId ? `<div class="badge badge-primary" style="margin-bottom:var(--space-md)">${state.routeParams.categoryIcon || '🔧'} ${catName}</div>` : `
+        ${catId ? `<div class="badge badge-primary" style="margin-bottom:var(--space-md)">${icon(catIconMap(state.routeParams.categoryIcon), 16)} ${catName}</div>` : `
           <div class="input-group">
             <label class="input-label">${t('service_categories')}</label>
             <select class="input" id="order-category">
               <option value="">${t('select_method')}</option>
-              ${state.categories.map(c => `<option value="${c.id}">${c.icon} ${getCategoryName(c)}</option>`).join('')}
+              ${state.categories.map(c => `<option value="${c.id}">${getCategoryName(c)}</option>`).join('')}
             </select>
           </div>
         `}
@@ -2719,12 +2731,12 @@ function renderCreateOrder() {
           <label class="input-label">${t('location')}</label>
           <div id="order-map" style="height:200px;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-sm);background:var(--c-bg)"></div>
           <input class="input" id="order-address" placeholder="${t('location')}" readonly>
-          <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-sm)" onclick="useMyLocation()">📍 ${t('use_my_location')}</button>
+          <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-sm)" onclick="useMyLocation()">${icon('map-pin', 16)} ${t('use_my_location')}</button>
         </div>
         <div class="input-group">
           <label class="input-label">${t('photos')}</label>
           <label class="btn btn-secondary btn-sm" style="cursor:pointer">
-            📷 ${t('add_photo')}
+            ${icon('camera', 16)} ${t('add_photo')}
             <input type="file" accept="image/*" multiple style="display:none" id="order-photos" onchange="handleOrderPhotoSelect(this)">
           </label>
           <div class="photo-grid" id="order-photo-preview"></div>
@@ -2753,7 +2765,7 @@ function renderOrderDetail() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('order_details')}</div>
         ${statusBadge(o.status)}
       </div>
@@ -2762,9 +2774,9 @@ function renderOrderDetail() {
           <h3 style="margin-bottom:var(--space-sm)">${o.title}</h3>
           <p style="color:var(--c-text-secondary);margin-bottom:var(--space-md)">${o.description}</p>
           <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;font-size:var(--font-sm);color:var(--c-text-secondary)">
-            <span>📍 ${o.location_address || t('location')}</span>
-            <span>📅 ${formatDate(o.created_at)}</span>
-            ${o.budget ? `<span>💰 ${formatCurrency(o.budget, o.currency)}</span>` : ''}
+            <span>${icon('map-pin', 14)} ${o.location_address || t('location')}</span>
+            <span>${icon('calendar', 14)} ${formatDate(o.created_at)}</span>
+            ${o.budget ? `<span>${icon('dollar-sign', 14)} ${formatCurrency(o.budget, o.currency)}</span>` : ''}
           </div>
         </div>
 
@@ -2774,7 +2786,7 @@ function renderOrderDetail() {
             ${steps.map((s, i) => `
               <div class="timeline-step">
                 <div class="timeline-dot ${i < currentStep ? 'done' : i === currentStep ? 'current' : 'pending'}">
-                  ${i < currentStep ? '✓' : i + 1}
+                  ${i < currentStep ? '✔' : i + 1}
                 </div>
                 <div class="timeline-content">
                   <div class="timeline-title">${t('status_' + s)}</div>
@@ -2854,7 +2866,7 @@ function renderChat() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="cleanupRealtime();state.currentConversation=null;goBack()">←</div>
+        <div class="header-back" onclick="cleanupRealtime();state.currentConversation=null;goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('open_chat')}</div>
       </div>
       <div class="chat-container">
@@ -2869,7 +2881,7 @@ function renderChat() {
         <div class="chat-input-bar">
           <input class="chat-input" id="chat-input" placeholder="${t('type_message')}"
                  onkeydown="if(event.key==='Enter'){handleSendMessage('${convId}');event.preventDefault()}">
-          <div class="chat-send" onclick="handleSendMessage('${convId}')">➤</div>
+          <div class="chat-send" onclick="handleSendMessage('${convId}')">${icon('send', 20)}</div>
         </div>
       </div>
     </div>`;
@@ -2895,7 +2907,7 @@ function renderExplore() {
         <div id="explore-map" style="flex:1;min-height:200px"></div>
         <div class="chip-row" style="position:absolute;top:var(--space-sm);left:0;right:0;z-index:500">
           ${state.categories.map(c => `
-            <div class="chip" onclick="filterExploreCategory('${c.id}')">${c.icon} ${getCategoryName(c)}</div>
+            <div class="chip" onclick="filterExploreCategory('${c.id}')">${getCategoryName(c)}</div>
           `).join('')}
         </div>
         ${routeInfo ? `
@@ -2903,13 +2915,13 @@ function renderExplore() {
             <div class="route-stats">
               ${routeInfo.driving ? `
                 <div class="route-stat">
-                  <div class="route-stat-value">🚗 ${routeInfo.driving.durationMin} ${t('min')}</div>
+                  <div class="route-stat-value">${icon('car', 16)} ${routeInfo.driving.durationMin} ${t('min')}</div>
                   <div class="route-stat-label">${t('driving')} · ${routeInfo.driving.distanceKm} ${t('km')}</div>
                 </div>
               ` : ''}
               ${routeInfo.walking ? `
                 <div class="route-stat">
-                  <div class="route-stat-value">🚶 ${routeInfo.walking.durationMin} ${t('min')}</div>
+                  <div class="route-stat-value">${icon('footprints', 16)} ${routeInfo.walking.durationMin} ${t('min')}</div>
                   <div class="route-stat-label">${t('walking')} · ${routeInfo.walking.distanceKm} ${t('km')}</div>
                 </div>
               ` : ''}
@@ -2925,9 +2937,9 @@ function renderExplore() {
               <div class="provider-info">
                 <div class="provider-name">${p.profiles?.display_name || t('provider')}</div>
                 <div class="provider-meta">
-                  <span>⭐ ${(p.avg_rating || 4).toFixed(1)}</span>
-                  <span>📍 ${p.distanceKm || '—'} ${t('km')}</span>
-                  <span>⏱ ${Math.round(p.avg_response_minutes || 30)} ${t('min')}</span>
+                  <span>${icon('star', 14)} ${(p.avg_rating || 4).toFixed(1)}</span>
+                  <span>${icon('map-pin', 14)} ${p.distanceKm || '—'} ${t('km')}</span>
+                  <span>${icon('clock', 14)} ${Math.round(p.avg_response_minutes || 30)} ${t('min')}</span>
                 </div>
               </div>
               <span class="badge badge-primary">${t('dispatch_score')}: ${((p.score || 0) * 100).toFixed(0)}</span>
@@ -2977,7 +2989,7 @@ async function loadExploreProviders() {
     scored.forEach(p => {
       if (p.location_lat && p.location_lng) {
         const marker = L.marker([p.location_lat, p.location_lng]).addTo(exploreMap);
-        marker.bindPopup(`<b>${p.profiles?.display_name}</b><br>⭐ ${(p.avg_rating||4).toFixed(1)} · ${p.distanceKm} km`);
+        marker.bindPopup(`<b>${p.profiles?.display_name}</b><br>★ ${(p.avg_rating||4).toFixed(1)} · ${p.distanceKm} km`);
         marker.on('click', async () => {
           const routes = await showRouteOnMap(exploreMap, userLat, userLng, p.location_lat, p.location_lng);
           state.routeParams.routeInfo = routes;
@@ -2998,19 +3010,19 @@ function renderPayment() {
   const vat = subtotal * vatRate;
   const total = subtotal + vat;
   const methods = [
-    { id: 'card', label: t('card'), icon: '💳', show: true },
-    { id: 'apple_pay', label: t('apple_pay'), icon: '🍎', show: true },
-    { id: 'mada', label: t('mada'), icon: '🏦', show: country === 'SA' },
-    { id: 'stc_pay', label: t('stc_pay'), icon: '📱', show: country === 'SA' },
-    { id: 'vipps', label: t('vipps'), icon: '📲', show: country === 'NO' && state.flags.norway_market_enabled },
-    { id: 'swish', label: t('swish'), icon: '📲', show: country === 'SE' && state.flags.sweden_market_enabled },
-    { id: 'cash', label: t('cash'), icon: '💵', show: state.flags.cash_payment_enabled }
+    { id: 'card', label: t('card'), icon: 'credit-card', show: true },
+    { id: 'apple_pay', label: t('apple_pay'), icon: 'smartphone', show: true },
+    { id: 'mada', label: t('mada'), icon: 'landmark', show: country === 'SA' },
+    { id: 'stc_pay', label: t('stc_pay'), icon: 'smartphone', show: country === 'SA' },
+    { id: 'vipps', label: t('vipps'), icon: 'smartphone', show: country === 'NO' && state.flags.norway_market_enabled },
+    { id: 'swish', label: t('swish'), icon: 'smartphone', show: country === 'SE' && state.flags.sweden_market_enabled },
+    { id: 'cash', label: t('cash'), icon: 'banknote', show: state.flags.cash_payment_enabled }
   ].filter(m => m.show);
 
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('payment')}</div>
       </div>
       <div class="content content-padded">
@@ -3032,9 +3044,9 @@ function renderPayment() {
         ${methods.map(m => `
           <div class="card card-padded card-hover" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:var(--space-md)"
                onclick="processPayment('${o.id}','${m.id}')">
-            <span style="font-size:24px">${m.icon}</span>
+            <span>${icon(m.icon, 24)}</span>
             <span style="flex:1;font-weight:600">${m.label}</span>
-            <span style="color:var(--c-text-muted)">→</span>
+            <span style="color:var(--c-text-muted)">${icon('chevron-right', 18)}</span>
           </div>
         `).join('')}
       </div>
@@ -3045,11 +3057,11 @@ function renderReview() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('rate_service')}</div>
       </div>
       <div class="content content-padded" style="text-align:center">
-        <div class="avatar avatar-xl" style="margin:var(--space-xl) auto var(--space-md)">🔧</div>
+        <div class="avatar avatar-xl" style="margin:var(--space-xl) auto var(--space-md)">${icon('wrench', 32)}</div>
         <h3 style="margin-bottom:var(--space-lg)">${t('rate_provider')}</h3>
         <div class="stars" id="review-stars" style="justify-content:center;margin-bottom:var(--space-lg)">
           ${[1,2,3,4,5].map(n => `<div class="star" data-rating="${n}" onclick="setRating(${n})">★</div>`).join('')}
@@ -3086,7 +3098,7 @@ function renderProfile() {
         <div style="text-align:center;margin-bottom:var(--space-xl)">
           <div class="avatar avatar-xl" style="margin:0 auto var(--space-md);cursor:pointer;position:relative" onclick="document.getElementById('avatar-upload').click()">
             ${p.photo_url ? `<img src="${p.photo_url}" alt="">` : getInitials(p.display_name)}
-            <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px">📷</div>
+            <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center">${icon('camera', 14)}</div>
           </div>
           <input type="file" id="avatar-upload" accept="image/*" style="display:none" onchange="uploadAvatar(this.files[0]).then(()=>render())">
           <h2>${p.display_name}</h2>
@@ -3095,13 +3107,13 @@ function renderProfile() {
         </div>
         <div class="settings-list">
           <div class="settings-item" onclick="navigate('edit-profile')">
-            <span class="si-icon">✏️</span><span class="si-text">${t('edit_profile')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('edit', 20)}</span><span class="si-text">${t('edit_profile')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" onclick="navigate('settings')">
-            <span class="si-icon">🔔</span><span class="si-text">${t('notifications')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('bell', 20)}</span><span class="si-text">${t('notifications')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item">
-            <span class="si-icon">🌐</span><span class="si-text">${t('language')}</span>
+            <span class="si-icon">${icon('globe', 20)}</span><span class="si-text">${t('language')}</span>
             <select class="input" style="width:auto;padding:6px 10px;font-size:var(--font-sm)" onchange="switchLanguage(this.value)">
               <option value="en" ${state.lang === 'en' ? 'selected' : ''}>English</option>
               <option value="ar" ${state.lang === 'ar' ? 'selected' : ''}>العربية</option>
@@ -3110,16 +3122,16 @@ function renderProfile() {
             </select>
           </div>
           <div class="settings-item" onclick="navigate('settings')">
-            <span class="si-icon">🔒</span><span class="si-text">${t('security')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('lock', 20)}</span><span class="si-text">${t('security')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" onclick="requestDataExport()">
-            <span class="si-icon">📦</span><span class="si-text">${t('export_data')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('download', 20)}</span><span class="si-text">${t('export_data')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" style="color:var(--c-danger)" onclick="navigate('account-deletion')">
-            <span class="si-icon">🗑️</span><span class="si-text">${t('delete_account')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('trash-2', 20)}</span><span class="si-text">${t('delete_account')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))handleLogout()">
-            <span class="si-icon">🚪</span><span class="si-text">${t('logout')}</span>
+            <span class="si-icon">${icon('log-out', 20)}</span><span class="si-text">${t('logout')}</span>
           </div>
         </div>
         <div style="text-align:center;margin-top:var(--space-xl);color:var(--c-text-muted);font-size:var(--font-xs)">
@@ -3135,7 +3147,7 @@ function renderEditProfile() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('edit_profile')}</div>
       </div>
       <div class="content content-padded">
@@ -3198,18 +3210,18 @@ function renderProviderDashboard() {
           </div>
           <div class="stat-card">
             <div class="stat-value">${pp?.avg_rating?.toFixed(1) || '4.0'}</div>
-            <div class="stat-label">⭐ ${pp?.rating_count || 0} ${t('reviews_count')}</div>
+            <div class="stat-label">${icon('star', 14)} ${pp?.rating_count || 0} ${t('reviews_count')}</div>
           </div>
         </div>
 
         ${state.profile?.kyc_status !== 'approved' ? `
           <div class="kyc-banner ${state.profile?.kyc_status || 'not_submitted'}">
-            <span style="font-size:24px">${state.profile?.kyc_status === 'pending' ? '⏳' : state.profile?.kyc_status === 'rejected' ? '❌' : '📋'}</span>
+            <span>${state.profile?.kyc_status === 'pending' ? icon('loader', 24) : state.profile?.kyc_status === 'rejected' ? icon('x-circle', 24) : icon('clipboard', 24)}</span>
             <div style="flex:1">
               <div style="font-weight:600">${t('kyc_title')}</div>
               <div style="font-size:var(--font-sm)">${t('kyc_' + (state.profile?.kyc_status || 'not_submitted'))}</div>
             </div>
-            <button class="btn btn-sm btn-secondary" onclick="navigate('kyc')">→</button>
+            <button class="btn btn-sm btn-secondary" onclick="navigate('kyc')">${icon('arrow-right', 16)}</button>
           </div>
         ` : ''}
 
@@ -3218,7 +3230,7 @@ function renderProviderDashboard() {
         </div>
         <div id="incoming-requests">
           <div class="empty-state">
-            <div class="empty-icon">📥</div>
+            <div class="empty-icon">${icon('inbox', 48)}</div>
             <div class="empty-text">${t('no_orders_desc')}</div>
           </div>
         </div>
@@ -3246,7 +3258,7 @@ function renderQuoteSubmit() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('submit_quote')}</div>
       </div>
       <div class="content content-padded">
@@ -3254,7 +3266,7 @@ function renderQuoteSubmit() {
           <h3 style="margin-bottom:var(--space-sm)">${o.title}</h3>
           <p style="color:var(--c-text-secondary);font-size:var(--font-sm)">${o.description}</p>
           <div style="margin-top:var(--space-sm);font-size:var(--font-sm);color:var(--c-text-secondary)">
-            📍 ${o.location_address || ''} · ${o.budget ? `💰 ${formatCurrency(o.budget, o.currency)}` : ''}
+            ${icon('map-pin', 14)} ${o.location_address || ''} · ${o.budget ? `${icon('dollar-sign', 14)} ${formatCurrency(o.budget, o.currency)}` : ''}
           </div>
         </div>
         <div class="input-group">
@@ -3302,7 +3314,7 @@ function renderEarnings() {
           <button class="btn btn-primary btn-full">${t('request_payout')}</button>
         </div>
         <div class="empty-state">
-          <div class="empty-icon">💸</div>
+          <div class="empty-icon">${icon('wallet', 48)}</div>
           <div class="empty-text">${t('no_orders_desc')}</div>
         </div>
       </div>
@@ -3315,12 +3327,12 @@ function renderKyc() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('kyc_title')}</div>
       </div>
       <div class="content content-padded">
         <div class="kyc-banner ${status}">
-          <span style="font-size:24px">${status === 'approved' ? '✅' : status === 'pending' ? '⏳' : status === 'rejected' ? '❌' : '📋'}</span>
+          <span>${status === 'approved' ? icon('check-circle', 24) : status === 'pending' ? icon('loader', 24) : status === 'rejected' ? icon('x-circle', 24) : icon('clipboard', 24)}</span>
           <div>${t('kyc_' + status)}</div>
         </div>
         ${status === 'rejected' && state.profile?.kyc_rejection_reason ? `
@@ -3334,21 +3346,21 @@ function renderKyc() {
             <div class="input-group">
               <label class="input-label">${t('national_id_front')}</label>
               <label class="btn btn-secondary btn-full" style="cursor:pointer">
-                📷 ${t('upload')}
+                ${icon('camera', 16)} ${t('upload')}
                 <input type="file" accept="image/*" style="display:none" id="kyc-front" onchange="handleKycFileSelect('front',this)">
               </label>
             </div>
             <div class="input-group">
               <label class="input-label">${t('national_id_back')}</label>
               <label class="btn btn-secondary btn-full" style="cursor:pointer">
-                📷 ${t('upload')}
+                ${icon('camera', 16)} ${t('upload')}
                 <input type="file" accept="image/*" style="display:none" id="kyc-back" onchange="handleKycFileSelect('back',this)">
               </label>
             </div>
             <div class="input-group">
               <label class="input-label">${t('trade_license')}</label>
               <label class="btn btn-secondary btn-full" style="cursor:pointer">
-                📷 ${t('upload')}
+                ${icon('camera', 16)} ${t('upload')}
                 <input type="file" accept="image/*" style="display:none" id="kyc-license" onchange="handleKycFileSelect('license',this)">
               </label>
             </div>
@@ -3396,19 +3408,19 @@ function renderProviderProfile() {
           </div>
           <span style="color:var(--c-text-secondary);font-size:var(--font-sm)">${pp?.avg_rating?.toFixed(1) || '4.0'} · ${pp?.rating_count || 0} ${t('reviews_count')}</span>
           <div style="margin-top:var(--space-sm)">
-            <span class="badge badge-info">⏱ ${t('response_time')} ${Math.round(pp?.avg_response_minutes || 30)} ${t('minutes')}</span>
+            <span class="badge badge-info">${icon('clock', 14)} ${t('response_time')} ${Math.round(pp?.avg_response_minutes || 30)} ${t('minutes')}</span>
           </div>
         </div>
         <div class="settings-list">
           <div class="settings-item" onclick="navigate('edit-profile')">
-            <span class="si-icon">✏️</span><span class="si-text">${t('edit_profile')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('edit', 20)}</span><span class="si-text">${t('edit_profile')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" onclick="navigate('kyc')">
-            <span class="si-icon">📋</span><span class="si-text">${t('kyc_title')}</span>
+            <span class="si-icon">${icon('clipboard', 20)}</span><span class="si-text">${t('kyc_title')}</span>
             <span class="badge badge-${p?.kyc_status === 'approved' ? 'success' : p?.kyc_status === 'pending' ? 'info' : 'warning'}">${t('kyc_' + (p?.kyc_status || 'not_submitted'))}</span>
           </div>
           <div class="settings-item">
-            <span class="si-icon">🌐</span><span class="si-text">${t('language')}</span>
+            <span class="si-icon">${icon('globe', 20)}</span><span class="si-text">${t('language')}</span>
             <select class="input" style="width:auto;padding:6px 10px;font-size:var(--font-sm)" onchange="switchLanguage(this.value)">
               <option value="en" ${state.lang === 'en' ? 'selected' : ''}>English</option>
               <option value="ar" ${state.lang === 'ar' ? 'selected' : ''}>العربية</option>
@@ -3418,11 +3430,11 @@ function renderProviderProfile() {
           </div>
           ${state.flags.subscriptions_enabled ? `
             <div class="settings-item" onclick="navigate('subscription')">
-              <span class="si-icon">⭐</span><span class="si-text">${t('subscription')}</span><span class="si-chevron">›</span>
+              <span class="si-icon">${icon('crown', 20)}</span><span class="si-text">${t('subscription')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
             </div>
           ` : ''}
           <div class="settings-item" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))handleLogout()">
-            <span class="si-icon">🚪</span><span class="si-text">${t('logout')}</span>
+            <span class="si-icon">${icon('log-out', 20)}</span><span class="si-text">${t('logout')}</span>
           </div>
         </div>
         <div style="text-align:center;margin-top:var(--space-xl);color:var(--c-text-muted);font-size:var(--font-xs)">
@@ -3454,19 +3466,19 @@ function renderAdminDashboard() {
         </div>
         <div class="settings-list">
           <div class="settings-item" onclick="navigate('admin-users')">
-            <span class="si-icon">👥</span><span class="si-text">${t('users')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('users', 20)}</span><span class="si-text">${t('users')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" onclick="navigate('admin-disputes')">
-            <span class="si-icon">⚖️</span><span class="si-text">${t('disputes')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('scale', 20)}</span><span class="si-text">${t('disputes')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" onclick="navigate('admin-reports')">
-            <span class="si-icon">📊</span><span class="si-text">${t('reports')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('bar-chart-2', 20)}</span><span class="si-text">${t('reports')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item" onclick="navigate('audit-logs')">
-            <span class="si-icon">📝</span><span class="si-text">${t('audit_logs')}</span><span class="si-chevron">›</span>
+            <span class="si-icon">${icon('file-text', 20)}</span><span class="si-text">${t('audit_logs')}</span><span class="si-chevron">${icon('chevron-right', 18)}</span>
           </div>
           <div class="settings-item">
-            <span class="si-icon">🌐</span><span class="si-text">${t('language')}</span>
+            <span class="si-icon">${icon('globe', 20)}</span><span class="si-text">${t('language')}</span>
             <select class="input" style="width:auto;padding:6px 10px;font-size:var(--font-sm)" onchange="switchLanguage(this.value)">
               <option value="en" ${state.lang === 'en' ? 'selected' : ''}>English</option>
               <option value="ar" ${state.lang === 'ar' ? 'selected' : ''}>العربية</option>
@@ -3475,7 +3487,7 @@ function renderAdminDashboard() {
             </select>
           </div>
           <div class="settings-item" style="color:var(--c-danger)" onclick="if(confirm('${t('confirm')}?'))handleLogout()">
-            <span class="si-icon">🚪</span><span class="si-text">${t('logout')}</span>
+            <span class="si-icon">${icon('log-out', 20)}</span><span class="si-text">${t('logout')}</span>
           </div>
         </div>
       </div>
@@ -3486,11 +3498,11 @@ function renderAdminUsers() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-back" onclick="navigate('admin-dashboard')">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('users')}</div>
       </div>
       <div class="search-bar">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon">${icon('search', 18)}</span>
         <input id="admin-user-search" placeholder="${t('search_users')}" oninput="debouncedSearchUsers(this.value)">
       </div>
       <div class="content" id="admin-users-list">
@@ -3508,7 +3520,8 @@ function renderAdminUsersList(users) {
   const el = $('#admin-users-list');
   if (!el) return;
   if (users.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">${t('no_orders_desc')}</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('users', 48)}</div><div class="empty-text">${t('no_orders_desc')}</div></div>`;
+    refreshIcons();
     return;
   }
   el.innerHTML = users.map(u => {
@@ -3526,7 +3539,7 @@ function renderAdminUsersList(users) {
         </div>
         <div style="margin-top:var(--space-sm);display:flex;gap:var(--space-sm)">
           ${u.role === 'provider' && u.kyc_status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="event.stopPropagation();adminKycDecision('${u.id}',true);this.closest('.order-card').remove()">✓ KYC</button>
+            <button class="btn btn-success btn-sm" onclick="event.stopPropagation();adminKycDecision('${u.id}',true);this.closest('.order-card').remove()">${icon('check', 14)} KYC</button>
           ` : ''}
           ${!u.is_banned ?
             `<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();adminBanUser('${u.id}',true,prompt('${t('ban_reason')}')).then(()=>debouncedSearchUsers(''))">${t('ban_user')}</button>` :
@@ -3542,7 +3555,7 @@ function renderAdminDisputes() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-back" onclick="navigate('admin-dashboard')">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('disputes')}</div>
       </div>
       <div class="chip-row">
@@ -3561,7 +3574,8 @@ async function loadAndRenderDisputes(filter) {
   const el = $('#admin-disputes-list');
   if (!el) return;
   if (disputes.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-text">${t('no_orders_desc')}</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('scale', 48)}</div><div class="empty-text">${t('no_orders_desc')}</div></div>`;
+    refreshIcons();
     return;
   }
   el.innerHTML = disputes.map(d => `
@@ -3594,7 +3608,7 @@ function renderAdminReports() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-back" onclick="navigate('admin-dashboard')">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('reports')}</div>
       </div>
       <div class="content content-padded">
@@ -3670,26 +3684,26 @@ function renderSettings() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('notifications')}</div>
       </div>
       <div class="content content-padded">
         <div class="card card-padded" style="margin-bottom:var(--space-md)">
           <button class="btn btn-primary btn-full" onclick="requestNotificationPermission().then(ok => showToast(ok ? t('done') : 'Permission denied', ok ? 'success' : 'error'))">
-            🔔 ${t('notif_enable')}
+            ${icon('bell', 18)} ${t('notif_enable')}
           </button>
         </div>
         <div class="settings-list">
           <div class="settings-item">
-            <span class="si-icon">📬</span><span class="si-text">${t('notif_orders')}</span>
+            <span class="si-icon">${icon('mail', 20)}</span><span class="si-text">${t('notif_orders')}</span>
             <div class="toggle on" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="settings-item">
-            <span class="si-icon">💬</span><span class="si-text">${t('notif_chat')}</span>
+            <span class="si-icon">${icon('message-circle', 20)}</span><span class="si-text">${t('notif_chat')}</span>
             <div class="toggle on" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="settings-item">
-            <span class="si-icon">📢</span><span class="si-text">${t('notif_promo')}</span>
+            <span class="si-icon">${icon('megaphone', 20)}</span><span class="si-text">${t('notif_promo')}</span>
             <div class="toggle" onclick="this.classList.toggle('on')"></div>
           </div>
         </div>
@@ -3701,7 +3715,7 @@ function renderDispute() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('open_dispute')}</div>
       </div>
       <div class="content content-padded">
@@ -3806,7 +3820,7 @@ function renderPhoneVerify() {
   return `
     <div class="screen active" style="justify-content:center">
       <div class="content-padded" style="max-width:400px;margin:0 auto;width:100%;text-align:center">
-        <div style="font-size:48px;margin-bottom:var(--space-md)">📱</div>
+        <div style="margin-bottom:var(--space-md)">${icon('smartphone', 48)}</div>
         <h2 style="margin-bottom:var(--space-sm)">${t('otp_title')}</h2>
         <p style="color:var(--c-text-secondary);margin-bottom:var(--space-lg)">${t('otp_subtitle')} ${phone}</p>
         <div class="otp-row" id="otp-row">
@@ -3917,7 +3931,7 @@ function renderSubscription() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('subscription_title')}</div>
       </div>
       <div class="content content-padded">
@@ -3981,12 +3995,12 @@ function renderBoost() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('boost_title')}</div>
       </div>
       <div class="content content-padded">
         <div style="text-align:center;margin-bottom:var(--space-lg)">
-          <div style="font-size:48px;margin-bottom:var(--space-md)">🚀</div>
+          <div style="margin-bottom:var(--space-md)">${icon('rocket', 48)}</div>
           <h2 style="margin-bottom:var(--space-sm)">${t('boost_title')}</h2>
           <p style="color:var(--c-text-secondary)">${t('boost_desc')}</p>
           <div class="badge badge-info" style="margin-top:var(--space-sm)">${t('boost_multiplier')}</div>
@@ -3995,7 +4009,7 @@ function renderBoost() {
         ${activeBoost ? `
           <div class="card card-padded" style="margin-bottom:var(--space-lg);border-color:var(--c-success);background:var(--c-success-light)">
             <div style="display:flex;align-items:center;gap:var(--space-md)">
-              <span style="font-size:24px">✅</span>
+              <span>${icon('check-circle', 24)}</span>
               <div>
                 <div style="font-weight:600;color:var(--c-success)">${t('boost_active')}</div>
                 <div style="font-size:var(--font-sm);color:var(--c-text-secondary)">
@@ -4062,7 +4076,7 @@ function renderProviderDetail() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('provider_detail')}</div>
       </div>
       <div class="content content-padded">
@@ -4135,7 +4149,7 @@ function renderAuditLogs() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="navigate('admin-dashboard')">←</div>
+        <div class="header-back" onclick="navigate('admin-dashboard')">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('audit_logs')}</div>
       </div>
       <div class="content" id="audit-logs-list">
@@ -4149,7 +4163,8 @@ async function loadAndRenderAuditLogs() {
   const el = $('#audit-logs-list');
   if (!el) return;
   if (logs.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-text">${t('no_logs')}</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('file-text', 48)}</div><div class="empty-text">${t('no_logs')}</div></div>`;
+    refreshIcons();
     return;
   }
   el.innerHTML = logs.map(log => `
@@ -4158,7 +4173,7 @@ async function loadAndRenderAuditLogs() {
         <span class="audit-action">${log.action}</span>
         <span class="audit-time">${formatDate(log.created_at)} ${formatTime(log.created_at)}</span>
       </div>
-      <div class="audit-actor">${log.actor_id === 'system' ? '🤖 System' : '👤 ' + log.actor_id.slice(0, 8)}</div>
+      <div class="audit-actor">${log.actor_id === 'system' ? icon('cpu', 14) + ' System' : icon('user', 14) + ' ' + log.actor_id.slice(0, 8)}</div>
       ${log.payload && Object.keys(log.payload).length > 0 ?
         `<div style="font-size:var(--font-xs);color:var(--c-text-muted);margin-top:2px;word-break:break-all">${JSON.stringify(log.payload)}</div>` : ''}
     </div>
@@ -4172,12 +4187,12 @@ function renderAccountDeletion() {
   return `
     <div class="screen active">
       <div class="header">
-        <div class="header-back" onclick="goBack()">←</div>
+        <div class="header-back" onclick="goBack()">${icon('arrow-left', 20)}</div>
         <div class="header-title">${t('account_deletion')}</div>
       </div>
       <div class="content content-padded">
         <div style="text-align:center;margin-bottom:var(--space-lg)">
-          <div style="font-size:48px;margin-bottom:var(--space-md)">⚠️</div>
+          <div style="margin-bottom:var(--space-md)">${icon('alert-triangle', 48)}</div>
           <h2 style="color:var(--c-danger);margin-bottom:var(--space-md)">${t('account_deletion')}</h2>
           <p style="color:var(--c-text-secondary)">${t('delete_warning')}</p>
         </div>
@@ -4239,6 +4254,7 @@ function render() {
   }
 
   app.innerHTML = html;
+  refreshIcons();
 
   // Post-render hooks
   if (state.route === 'create-order') initOrderMap();
@@ -4293,8 +4309,8 @@ function render() {
             ${statusBadge(o.status)}
           </div>
           <div class="order-card-meta">
-            <span>📍 ${o.address || ''}</span>
-            <span>🕐 ${timeAgo(o.created_at)}</span>
+            <span>${icon('map-pin', 14)} ${o.address || ''}</span>
+            <span>${icon('clock', 14)} ${timeAgo(o.created_at)}</span>
           </div>
           ${o.budget ? `<div class="order-card-price">${formatCurrency(o.budget, o.currency)}</div>` : ''}
         </div>
