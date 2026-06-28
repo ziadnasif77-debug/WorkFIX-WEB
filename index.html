@@ -1748,27 +1748,33 @@ function getDefaultRoute() {
    AUTH FUNCTIONS
    ============================================ */
 async function handleLogin(email, password) {
-  setLoading('auth', true);
-  render();
+  const btn = $('#login-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>'; }
   const { data, error } = await db.auth.signInWithPassword({ email, password });
-  setLoading('auth', false);
-  if (error) { showToast(error.message, 'error'); render(); return; }
+  if (btn) { btn.disabled = false; btn.textContent = t('login'); }
+  if (error) { showToast(error.message, 'error'); return; }
   await loadUserProfile();
   navigate(getDefaultRoute());
 }
 
 async function handleRegister(name, email, password, role) {
-  setLoading('auth', true);
-  render();
+  const btn = $('#register-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>'; }
   const { data, error } = await db.auth.signUp({
     email, password,
     options: { data: { display_name: name, role } }
   });
-  setLoading('auth', false);
-  if (error) { showToast(error.message, 'error'); render(); return; }
-  if (data.user) {
+  if (btn) { btn.disabled = false; btn.textContent = t('create_account'); }
+  if (error) { showToast(error.message, 'error'); return; }
+  if (data.user && !data.user.identities?.length) {
+    showToast(t('email') + ' already registered', 'error');
+    return;
+  }
+  if (data.session) {
     await loadUserProfile();
     navigate(getDefaultRoute());
+  } else {
+    showToast('Check your email to confirm your account', 'info');
   }
 }
 
