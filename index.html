@@ -2511,13 +2511,13 @@ function renderRegister() {
         <div class="input-group">
           <label class="input-label" style="margin-bottom:var(--space-sm)">${t('looking_for_service')} ${t('or')} ${t('offering_service')}?</label>
           <div style="display:flex;gap:var(--space-sm)">
-            <div class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'customer' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
-                 onclick="state.routeParams.selectedRole='customer';render()">
+            <div id="role-customer" class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'customer' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
+                 onclick="selectRole('customer')">
               <div style="font-size:28px;margin-bottom:var(--space-xs)">🏠</div>
               <div style="font-weight:600;font-size:var(--font-sm)">${t('looking_for_service')}</div>
             </div>
-            <div class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'provider' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
-                 onclick="state.routeParams.selectedRole='provider';render()">
+            <div id="role-provider" class="card card-padded card-hover" style="flex:1;text-align:center;${selectedRole === 'provider' ? 'border-color:var(--c-primary);background:var(--c-primary-light)' : ''}"
+                 onclick="selectRole('provider')">
               <div style="font-size:28px;margin-bottom:var(--space-xs)">🔧</div>
               <div style="font-weight:600;font-size:var(--font-sm)">${t('offering_service')}</div>
             </div>
@@ -2532,6 +2532,18 @@ function renderRegister() {
         </button>
       </div>
     </div>`;
+}
+
+function selectRole(role) {
+  state.routeParams.selectedRole = role;
+  const cust = $('#role-customer');
+  const prov = $('#role-provider');
+  if (cust && prov) {
+    cust.style.borderColor = role === 'customer' ? 'var(--c-primary)' : '';
+    cust.style.background = role === 'customer' ? 'var(--c-primary-light)' : '';
+    prov.style.borderColor = role === 'provider' ? 'var(--c-primary)' : '';
+    prov.style.background = role === 'provider' ? 'var(--c-primary-light)' : '';
+  }
 }
 
 function renderForgotPassword() {
