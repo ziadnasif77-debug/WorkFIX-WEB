@@ -1,3 +1,7 @@
 node_modules/
-package-lock.json
-package.json
+
+# Ignore root-level package files but allow workfix-next
+/package-lock.json
+/package.json
+!workfix-next/package.json
+!workfix-next/package-lock.json
