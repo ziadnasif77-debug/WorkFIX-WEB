@@ -1640,7 +1640,20 @@ function getCategoryName(cat) {
 /* ============================================
    SUPABASE CLIENT
    ============================================ */
-const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+let supabase;
+try {
+  const sb = window.supabase;
+  if (sb && sb.createClient) {
+    supabase = sb.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  } else if (sb && sb.default && sb.default.createClient) {
+    supabase = sb.default.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  } else {
+    throw new Error('Supabase library not loaded');
+  }
+} catch (e) {
+  console.error('Supabase init error:', e);
+  document.getElementById('app').innerHTML = '<div style="padding:24px;text-align:center;color:red">Error loading app. Check console.</div>';
+}
 
 /* ============================================
    UTILITIES
@@ -4382,51 +4395,57 @@ function installApp() {
    INITIALIZATION
    ============================================ */
 async function init() {
-  // Language detection
-  state.lang = detectLanguage();
-  const dir = I18N[state.lang]?.dir || 'ltr';
-  document.documentElement.lang = state.lang;
-  document.documentElement.dir = dir;
+  try {
+    // Language detection
+    state.lang = detectLanguage();
+    const dir = I18N[state.lang]?.dir || 'ltr';
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = dir;
 
-  // Render login first
-  render();
+    // Render login first
+    render();
 
-  // Check existing session
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    await loadUserProfile();
-    await Promise.all([loadCategories(), loadFlags(), loadOrders()]);
-    navigate(getDefaultRoute());
-    setupRealtime();
-  }
+    if (!supabase) return;
 
-  // Listen for auth changes
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
+    // Check existing session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
       await loadUserProfile();
       await Promise.all([loadCategories(), loadFlags(), loadOrders()]);
       navigate(getDefaultRoute());
       setupRealtime();
-    } else if (event === 'SIGNED_OUT') {
-      state.user = null;
-      state.profile = null;
-      cleanupRealtime();
-      navigate('login');
     }
-  });
 
-  // Handle browser back/forward
-  window.addEventListener('popstate', () => {
-    const hash = window.location.hash.slice(1) || 'login';
-    if (hash !== state.route) {
-      state.route = hash;
-      render();
+    // Listen for auth changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        await loadUserProfile();
+        await Promise.all([loadCategories(), loadFlags(), loadOrders()]);
+        navigate(getDefaultRoute());
+        setupRealtime();
+      } else if (event === 'SIGNED_OUT') {
+        state.user = null;
+        state.profile = null;
+        cleanupRealtime();
+        navigate('login');
+      }
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', () => {
+      const hash = window.location.hash.slice(1) || 'login';
+      if (hash !== state.route) {
+        state.route = hash;
+        render();
+      }
+    });
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
     }
-  });
-
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+  } catch (e) {
+    console.error('Init error:', e);
   }
 }
 
