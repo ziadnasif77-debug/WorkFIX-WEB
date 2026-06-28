@@ -1,0 +1,48 @@
+/* ============================================
+   APP SHELL
+   ============================================ */
+#app{height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.screen{
+  display:none;flex-direction:column;height:100%;overflow:hidden;
+  animation:fadeIn .2s ease;
+}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Header */
+.header{
+  height:var(--header-height);padding:0 var(--space-md);
+  display:flex;align-items:center;gap:var(--space-md);
+  background:var(--c-surface);border-bottom:1px solid var(--c-border);
+  flex-shrink:0;padding-top:var(--safe-top);position:relative;z-index:10;
+}
+.header-title{font-size:var(--font-lg);font-weight:700;flex:1}
+.header-back{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-full);cursor:pointer;font-size:20px;
+}
+.header-back:hover{background:var(--c-surface-hover)}
+.header-action{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-full);cursor:pointer;position:relative;
+}
+.header-action:hover{background:var(--c-surface-hover)}
+
+/* Scrollable content */
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.content-padded{padding:var(--space-md)}
+
+/* Bottom tabs */
+.tab-bar{
+  height:var(--tab-height);padding-bottom:var(--safe-bottom);
+  display:flex;background:var(--c-surface);border-top:1px solid var(--c-border);
+  flex-shrink:0;position:relative;z-index:10;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;color:var(--c-text-muted);transition:color .15s;
+  font-size:var(--font-xs);
+}
+.tab-item.active{color:var(--c-primary)}
+.tab-item .tab-icon{font-size:22px;line-height:1}
+.tab-item .tab-label{font-weight:500}

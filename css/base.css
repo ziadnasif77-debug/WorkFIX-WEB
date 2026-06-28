@@ -1,0 +1,15 @@
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{
+  height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-size:var(--font-md);color:var(--c-text);background:var(--c-bg);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+html[dir="rtl"] body{font-family:'Segoe UI',Tahoma,'Noto Sans Arabic',Arial,sans-serif}
+a{color:var(--c-primary);text-decoration:none}
+input,textarea,select,button{font:inherit;color:inherit;border:none;outline:none;background:none}
+img{max-width:100%;display:block}
+ul,ol{list-style:none}
