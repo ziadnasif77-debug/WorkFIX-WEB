@@ -3,12 +3,14 @@
    ============================================ */
 // Feature flags
 async function loadFlags() {
+  if (!db) return;
   const { data } = await db.from('feature_flags').select('*');
   if (data) data.forEach(f => state.flags[f.key] = f.enabled);
 }
 
 // Provider orders (incoming, not yet quoted)
 async function loadIncomingRequests() {
+  if (!db) return [];
   const { data } = await db.from('orders').select('*, categories(*)')
     .in('status', ['pending', 'quoted']).order('created_at', { ascending: false }).limit(20);
   return data || [];
@@ -16,7 +18,7 @@ async function loadIncomingRequests() {
 
 // Provider earnings
 async function loadEarnings() {
-  if (!state.user) return { available: 0, pending: 0, history: [] };
+  if (!db || !state.user) return { available: 0, pending: 0, history: [] };
   const { data } = await db.from('payments').select('*')
     .eq('provider_id', state.user.id).eq('status', 'captured').order('created_at', { ascending: false });
   const history = data || [];
@@ -28,7 +30,7 @@ async function loadEarnings() {
    PROVIDER DASHBOARD DATA
    ============================================ */
 async function loadProviderDashboardData() {
-  if (!state.user) return { pendingQuotes: 0, activeJobs: 0, earnedToday: 0 };
+  if (!db || !state.user) return { pendingQuotes: 0, activeJobs: 0, earnedToday: 0 };
   const today = new Date().toISOString().split('T')[0];
 
   const [quotes, jobs, earnings] = await Promise.all([

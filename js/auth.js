@@ -2,6 +2,7 @@
    AUTH FUNCTIONS
    ============================================ */
 async function handleLogin(email, password) {
+  if (!db) { showToast('Service unavailable. Please refresh.', 'error'); return; }
   const btn = $('#login-btn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>'; }
   const { data, error } = await db.auth.signInWithPassword({ email, password });
@@ -12,6 +13,7 @@ async function handleLogin(email, password) {
 }
 
 async function handleRegister(name, email, password, role) {
+  if (!db) { showToast('Service unavailable. Please refresh.', 'error'); return; }
   const btn = $('#register-btn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div>'; }
   const { data, error } = await db.auth.signUp({
@@ -33,7 +35,7 @@ async function handleRegister(name, email, password, role) {
 }
 
 async function handleLogout() {
-  await db.auth.signOut();
+  if (db) await db.auth.signOut();
   state.user = null;
   state.profile = null;
   state.providerProfile = null;
@@ -43,6 +45,7 @@ async function handleLogout() {
 }
 
 async function handleResetPassword(email) {
+  if (!db) { showToast('Service unavailable. Please refresh.', 'error'); return; }
   setLoading('auth', true);
   render();
   const { error } = await db.auth.resetPasswordForEmail(email);
@@ -52,6 +55,7 @@ async function handleResetPassword(email) {
 }
 
 async function loadUserProfile() {
+  if (!db) return;
   const { data: { user } } = await db.auth.getUser();
   if (!user) return;
   state.user = user;

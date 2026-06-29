@@ -43,6 +43,17 @@ function render() {
   app.innerHTML = html;
   refreshIcons();
 
+  // Cleanup maps when leaving their pages
+  if (state.route !== 'create-order' && orderMap) {
+    try { orderMap.remove(); } catch(e) {}
+    orderMap = null;
+    orderMarker = null;
+  }
+  if (state.route !== 'explore' && exploreMap) {
+    try { exploreMap.remove(); } catch(e) {}
+    exploreMap = null;
+  }
+
   // Post-render hooks
   if (state.route === 'create-order') initOrderMap();
   if (state.route === 'explore') {
@@ -213,7 +224,7 @@ async function init() {
     // Render login first
     render();
 
-    if (!supabase) return;
+    if (!db) return;
 
     // Check existing session
     const { data: { session } } = await db.auth.getSession();

@@ -3,6 +3,7 @@
    ============================================ */
 // Admin
 async function loadAdminUsers(search = '') {
+  if (!db) return [];
   let q = db.from('profiles').select('*').order('created_at', { ascending: false }).limit(CONFIG.PAGE_SIZE);
   if (search) q = q.ilike('display_name', `%${search}%`);
   const { data } = await q;
@@ -10,6 +11,7 @@ async function loadAdminUsers(search = '') {
 }
 
 async function loadAdminDisputes(filter = 'all') {
+  if (!db) return [];
   let q = db.from('disputes').select('*, orders(title)').order('created_at', { ascending: false });
   if (filter !== 'all') q = q.eq('status', filter);
   const { data } = await q;
@@ -17,6 +19,7 @@ async function loadAdminDisputes(filter = 'all') {
 }
 
 async function adminBanUser(userId, ban, reason) {
+  if (!db) return;
   const { error } = await db.rpc('admin_ban_user', {
     p_user_id: userId, p_ban: ban, p_reason: reason || null
   });
@@ -25,6 +28,7 @@ async function adminBanUser(userId, ban, reason) {
 }
 
 async function adminKycDecision(uid, approved, reason) {
+  if (!db) return;
   const { error } = await db.rpc('admin_kyc_decision', {
     p_uid: uid, p_approved: approved, p_reason: reason || null
   });
@@ -33,6 +37,7 @@ async function adminKycDecision(uid, approved, reason) {
 }
 
 async function adminResolveDispute(disputeId, resolution, note) {
+  if (!db) return;
   const { error } = await db.rpc('resolve_dispute', {
     p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null
   });
@@ -44,6 +49,7 @@ async function adminResolveDispute(disputeId, resolution, note) {
    ADMIN DATA - REPORTS & AUDIT
    ============================================ */
 async function loadReportData(fromDate, toDate) {
+  if (!db) return { totalRevenue:0, totalCommission:0, totalOrders:0, avgOrderValue:0, cancelledOrders:0, disputeRate:0, newUsers:0, activeProviders:0, weeklyData:[0,0,0,0,0,0,0] };
   let q = db.from('payments').select('amount, commission, net_amount, currency, created_at, status')
     .eq('status', 'captured');
   if (fromDate) q = q.gte('created_at', fromDate);
@@ -77,6 +83,7 @@ async function loadReportData(fromDate, toDate) {
 }
 
 async function loadAuditLogs(limit = 50) {
+  if (!db) return [];
   const { data } = await db.from('audit_logs').select('*')
     .order('created_at', { ascending: false }).limit(limit);
   return data || [];
@@ -86,6 +93,7 @@ async function loadAuditLogs(limit = 50) {
    ADMIN DASHBOARD STATS
    ============================================ */
 async function loadAdminStats() {
+  if (!db) return { totalUsers:0, activeOrders:0, pendingKyc:0, openDisputes:0 };
   const [users, orders, kyc, disputes] = await Promise.all([
     db.from('profiles').select('*', { count: 'exact', head: true }),
     db.from('orders').select('*', { count: 'exact', head: true }).in('status', ['pending','quoted','confirmed','payment_pending','in_progress']),
@@ -104,6 +112,7 @@ async function loadAdminStats() {
    DATA EXPORT & ACCOUNT DELETION
    ============================================ */
 async function requestDataExport() {
+  if (!db) return;
   await db.from('audit_logs').insert({
     action: 'data_export_requested', actor_id: state.user.id,
     payload: { user_id: state.user.id }
@@ -112,6 +121,7 @@ async function requestDataExport() {
 }
 
 async function requestAccountDeletion() {
+  if (!db) return;
   const { error } = await db.from('profiles').update({
     is_active: false
   }).eq('id', state.user.id);

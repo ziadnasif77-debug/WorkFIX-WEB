@@ -398,6 +398,7 @@ function renderOrderDetail() {
 }
 
 async function openChat(orderId) {
+  if (!db) return;
   const { data } = await db.from('conversations').select('*')
     .eq('order_id', orderId).contains('participants', [state.user.id]).limit(1).single();
   if (data) {
@@ -504,6 +505,7 @@ async function filterExploreCategory(categoryId) {
 }
 
 async function loadExploreProviders() {
+  if (!db) return;
   const { data: providers } = await db.from('provider_profiles')
     .select('*, profiles!inner(display_name, photo_url, kyc_status)')
     .eq('is_available', true).eq('is_verified', true);
@@ -712,6 +714,7 @@ function renderEditProfile() {
 }
 
 async function saveProfile() {
+  if (!db) return;
   const name = $('#edit-name')?.value;
   const phone = $('#edit-phone')?.value;
   const { error } = await db.from('profiles').update({
@@ -787,7 +790,7 @@ function renderProviderDashboard() {
 }
 
 async function toggleAvailability() {
-  if (!state.providerProfile) return;
+  if (!db || !state.providerProfile) return;
   const newVal = !state.providerProfile.is_available;
   await db.from('provider_profiles').update({ is_available: newVal }).eq('id', state.user.id);
   state.providerProfile.is_available = newVal;
@@ -919,6 +922,7 @@ function renderKyc() {
 }
 
 async function submitKyc() {
+  if (!db) return;
   if (!kycFiles.front || !kycFiles.back) {
     showToast(t('kyc_not_submitted'), 'error');
     return;
@@ -1404,6 +1408,7 @@ function getOtpValue() {
 }
 
 async function verifyOtp() {
+  if (!db) return;
   const code = getOtpValue();
   if (code.length !== 6) return;
 
@@ -1440,6 +1445,7 @@ function startOtpTimer() {
 }
 
 async function resendOtp() {
+  if (!db) return;
   const phone = state.routeParams.phone;
   if (!phone) return;
   await db.auth.signInWithOtp({ phone });
@@ -1510,6 +1516,7 @@ function renderSubscription() {
 }
 
 async function subscribeToPlan(tier, period) {
+  if (!db) return;
   if (!state.flags.subscriptions_enabled) {
     showToast('Subscriptions coming soon', 'info');
     return;
@@ -1588,6 +1595,7 @@ function renderBoost() {
 }
 
 async function purchaseBoost(duration) {
+  if (!db) return;
   if (!state.flags.boost_enabled) {
     showToast('Boosts coming soon', 'info');
     return;

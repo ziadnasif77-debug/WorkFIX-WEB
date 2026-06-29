@@ -2,12 +2,13 @@
    DATA FUNCTIONS — ORDERS, QUOTES, PAYMENTS
    ============================================ */
 async function loadCategories() {
+  if (!db) return;
   const { data } = await db.from('categories').select('*').eq('is_active', true).order('sort_order');
   state.categories = data || [];
 }
 
 async function loadOrders(filter = 'all') {
-  if (!state.user) return;
+  if (!db || !state.user) return;
   setLoading('orders', true);
   render();
   let q = db.from('orders').select('*, categories(*)');
@@ -25,6 +26,7 @@ async function loadOrders(filter = 'all') {
 }
 
 async function loadOrder(id) {
+  if (!db) return;
   const { data: order } = await db.from('orders').select('*, categories(*)').eq('id', id).single();
   state.currentOrder = order;
   const { data: quotes } = await db.from('quotes').select('*, profiles:provider_id(display_name, photo_url)').eq('order_id', id).order('created_at');
@@ -32,6 +34,7 @@ async function loadOrder(id) {
 }
 
 async function createOrder(formData) {
+  if (!db) return;
   setLoading('createOrder', true);
   render();
 
@@ -64,6 +67,7 @@ async function createOrder(formData) {
 }
 
 async function submitQuote(orderId, price, estimatedHours, notes) {
+  if (!db) return;
   setLoading('submitQuote', true);
   render();
   const { error } = await db.rpc('submit_quote', {
@@ -76,6 +80,7 @@ async function submitQuote(orderId, price, estimatedHours, notes) {
 }
 
 async function acceptQuote(orderId, quoteId) {
+  if (!db) return;
   const { error } = await db.rpc('accept_quote', { p_order_id: orderId, p_quote_id: quoteId });
   if (error) { showToast(error.message, 'error'); return; }
   showToast(t('done'), 'success');
@@ -84,6 +89,7 @@ async function acceptQuote(orderId, quoteId) {
 }
 
 async function cancelOrder(orderId) {
+  if (!db) return;
   const { error } = await db.rpc('cancel_order', { p_order_id: orderId });
   if (error) { showToast(error.message, 'error'); return; }
   showToast(t('done'), 'success');
@@ -91,6 +97,7 @@ async function cancelOrder(orderId) {
 }
 
 async function markComplete(orderId) {
+  if (!db) return;
   const { error } = await db.rpc('mark_order_complete', { p_order_id: orderId });
   if (error) { showToast(error.message, 'error'); return; }
   showToast(t('done'), 'success');
@@ -99,6 +106,7 @@ async function markComplete(orderId) {
 }
 
 async function confirmCompletion(orderId) {
+  if (!db) return;
   const { error } = await db.rpc('confirm_completion', { p_order_id: orderId });
   if (error) { showToast(error.message, 'error'); return; }
   showToast(t('done'), 'success');
@@ -107,6 +115,7 @@ async function confirmCompletion(orderId) {
 }
 
 async function handleSubmitReview(orderId, rating, comment) {
+  if (!db) return;
   const { error } = await db.rpc('submit_review', {
     p_order_id: orderId, p_rating: rating, p_comment: comment || null
   });
@@ -116,6 +125,7 @@ async function handleSubmitReview(orderId, rating, comment) {
 }
 
 async function handleOpenDispute(orderId, reason) {
+  if (!db) return;
   const { error } = await db.rpc('open_dispute', {
     p_order_id: orderId, p_reason: reason
   });
@@ -129,6 +139,7 @@ async function handleOpenDispute(orderId, reason) {
    PAYMENT PROCESSING
    ============================================ */
 async function processPayment(orderId, method) {
+  if (!db) return;
   setLoading('payment', true);
   render();
   const o = state.currentOrder;
@@ -219,6 +230,7 @@ function haversine(lat1, lng1, lat2, lng2) {
 }
 
 async function dispatchToProviders(orderId, orderLat, orderLng, categoryId) {
+  if (!db) return [];
   const { data: providers } = await db.from('provider_profiles')
     .select('*, profiles!inner(display_name, kyc_status)')
     .eq('is_available', true).eq('is_verified', true);
@@ -276,7 +288,7 @@ async function showRouteOnMap(map, fromLat, fromLng, toLat, toLng) {
    IMAGE UPLOAD (Supabase Storage)
    ============================================ */
 async function uploadImage(file, bucket = 'photos', folder = '') {
-  if (!file) return null;
+  if (!db || !file) return null;
   const ext = file.name.split('.').pop();
   const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   showToast(t('uploading'), 'info');
@@ -325,7 +337,7 @@ async function requestNotificationPermission() {
 }
 
 async function registerPushToken() {
-  if (!('serviceWorker' in navigator) || !state.user) return;
+  if (!db || !('serviceWorker' in navigator) || !state.user) return;
   try {
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({

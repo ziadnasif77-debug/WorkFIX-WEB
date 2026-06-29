@@ -1112,7 +1112,12 @@ function getCategoryName(cat) {
 /* ============================================
    SUPABASE CLIENT
    ============================================ */
-const db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+let db = null;
+try {
+  if (window.supabase) {
+    db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  }
+} catch(e) { console.error('Supabase init failed:', e); }
 
 /* ============================================
    UTILITIES
