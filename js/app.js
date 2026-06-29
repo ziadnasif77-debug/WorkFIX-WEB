@@ -240,7 +240,7 @@ async function init() {
     });
 
     // Handle browser back/forward
-    window.addEventListener('popstate', () => {
+    window.addEventListener('hashchange', () => {
       const hash = window.location.hash.slice(1) || 'login';
       if (hash !== state.route) {
         state.route = hash;

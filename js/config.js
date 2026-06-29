@@ -1214,6 +1214,8 @@ function goBack() {
     state.routeParams = prev.params;
     window.location.hash = prev.route;
     render();
+  } else {
+    navigate(getDefaultRoute());
   }
 }
 
